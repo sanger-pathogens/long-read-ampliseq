@@ -45,15 +45,18 @@ workflow BASECALLING {
     CONVERT_FAST5_TO_POD5(raw_files.fast5)
     | mix(raw_files.pod5) //files that were already pod5 are added back in after the convert process
     | BASECALL
-    | DEMUX //todo https://github.com/nanoporetech/dorado/issues/625 if list of barcodes provided loop over and call for each
-    | flatten
-    | map{ bam -> 
+    
+    DEMUX(BASECALL.out.called_channel, params.barcode_kit_name) //todo https://github.com/nanoporetech/dorado/issues/625 if list of barcodes provided loop over and call for each
+    | transpose
+    | map{ barcode_kit, bam -> 
         def meta = [:]
-        meta.ID = bam.simpleName
+        meta.barcode_kit = barcode_kit
+        meta.barcode = "${ bam.simpleName.contains("barcode") ? bam.simpleName.split("barcode")[1] : bam.simpleName }" //i.e. when bam.simpleName = unclassified
         tuple(meta, bam)
     }
     | set{ barcode_bam_ch }
 
+    barcode_bam_ch.view()
     emit:
     barcode_bam_ch
 

@@ -33,12 +33,13 @@ process DEMUX {
     
     input:
     path(called_bam)
+    each(barcode_kit_name)
 
     output:
-    path("barcodes/*.bam"), emit: called_channel
+    tuple val(barcode_kit_name), path("barcodes/*.bam"), emit: called_channel
 
     script:
     """
-    dorado demux --output-dir ./barcodes --kit-name ${params.barcode_kit_name} ${called_bam}
+    dorado demux --output-dir ./barcodes --kit-name ${barcode_kit_name} ${called_bam}
     """
 }
