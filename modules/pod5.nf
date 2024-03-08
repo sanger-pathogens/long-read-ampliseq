@@ -13,6 +13,6 @@ process CONVERT_FAST5_TO_POD5 {
 
     script:
     """
-    pod5 convert fast5 --output converted.pod5 -t 8 ${fast5s}
+    pod5 convert fast5 --output converted.pod5 -t ${task.cpus} ${fast5s}
     """
 }
