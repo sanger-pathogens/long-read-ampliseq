@@ -1,7 +1,8 @@
 import org.apache.commons.io.FilenameUtils
 
 include { CONVERT_FAST5_TO_POD5 } from '../modules/pod5.nf'
-include { BASECALL; DEMUX } from '../modules/dorado.nf'
+include { BASECALL; DEMUX       } from '../modules/dorado.nf'
+include { CONVERT_TO_FASTQ      } from '../modules/samtools.nf'
 
 def validateSingleFormat(listOfFormats){
     if (listOfFormats.size() != 1) {
@@ -56,8 +57,13 @@ workflow BASECALLING {
     }
     | set{ barcode_bam_ch }
 
-    barcode_bam_ch.view()
-    emit:
-    barcode_bam_ch
+    if (params.read_format == "fastq") {
+        CONVERT_TO_FASTQ(barcode_bam_ch)
+        | set { long_reads_ch }
+    } else {
+        barcode_bam_ch.set { long_reads_ch }
+    }
 
+    emit:
+    long_reads_ch
 }

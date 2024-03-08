@@ -13,14 +13,10 @@ process BASECALL {
     path("calls.bam"), emit: called_channel
 
     script:
-    if (params.basecall_model == "")
-        """
-        dorado basecaller ${params.basecalling_accuracy} ${pod5} --trim ${params.trim_adapters} > calls.bam
-        """
-    else
-        """
-        dorado basecaller ${params.basecalling_accuracy},${params.basecall_model} ${pod5} --trim ${params.trim_adapters} > calls.bam
-        """
+    basecall_model = {params.basecall_model == "auto" ? "" : ",${params.basecall_model}"}
+    """
+    dorado basecaller ${params.basecalling_accuracy}${basecall_model} --trim ${params.trim_adapters} ${pod5} > calls.bam
+    """
 }
 
 process DEMUX {
@@ -29,7 +25,9 @@ process DEMUX {
     label 'time_1'
     label 'gpu'
 
-    container '/data/pam/installs/images/dorado-0.5.1.simg'
+    tag "${barcode_kit_name}"
+
+    container 'quay.io/sangerpathogens/cuda_dorado:0.5.1'
     
     input:
     path(called_bam)
