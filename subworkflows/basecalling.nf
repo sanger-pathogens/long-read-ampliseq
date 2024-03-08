@@ -14,8 +14,8 @@ workflow BASECALLING {
     raw_read_signal_files
 
     main:
-    raw_reads.map{ reads ->
-        tuple(FilenameUtils.getExtension(reads.toString()), reads)
+    raw_read_signal_files.map{ raw_read_signal_file ->
+        tuple(FilenameUtils.getExtension(raw_read_signal_file.toString()), raw_read_signal_file)
     }
     | groupTuple
     | set{ input_formats }
