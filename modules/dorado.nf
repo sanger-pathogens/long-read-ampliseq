@@ -15,11 +15,11 @@ process BASECALL {
     script:
     if (params.basecall_model == "")
         """
-        dorado basecaller ${params.basecalling_accuracy} ${pod5} --trim ${params.trim_adapters} --kit-name ${params.barcode_kit_name} > calls.bam
+        dorado basecaller ${params.basecalling_accuracy} ${pod5} --trim ${params.trim_adapters} > calls.bam
         """
     else
         """
-        dorado basecaller ${params.basecalling_accuracy},${params.basecall_model} ${pod5} --trim ${params.trim_adapters} --kit-name ${params.barcode_kit_name} > calls.bam
+        dorado basecaller ${params.basecalling_accuracy},${params.basecall_model} ${pod5} --trim ${params.trim_adapters} > calls.bam
         """
 }
 

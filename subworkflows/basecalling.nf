@@ -15,7 +15,7 @@ workflow BASECALLING {
 
     main:
     raw_read_signal_files.map{ raw_read_signal_file ->
-        tuple(FilenameUtils.getExtension(raw_read_signal_file.toString()), raw_read_signal_file)
+        tuple(raw_read_signal_file.extension, raw_read_signal_file)
     }
     | groupTuple
     | set{ input_formats }
@@ -28,20 +28,30 @@ workflow BASECALLING {
     | collect
     | map{ format -> validateSingleFormat(format)}
 
-    input_formats.branch{format, files ->
+    /*
+    Files in the fast5 format are converted to pod5 and so are branched out into their respective channels
+    */
+
+    input_formats
+    | branch{format, files ->
         fast5: format == "fast5"
             return files
 
         pod5: format == "pod5"
            return files
-    }.set{ raw_files }
+    }
+    | set{ raw_files }
 
     CONVERT_FAST5_TO_POD5(raw_files.fast5)
-    | mix(raw_files.pod5)
+    | mix(raw_files.pod5) //files that were already pod5 are added back in after the convert process
     | BASECALL
-    | DEMUX
+    | DEMUX //todo https://github.com/nanoporetech/dorado/issues/625 if list of barcodes provided loop over and call for each
     | flatten
-    | map{ bam -> tuple(FilenameUtils.getBaseName(bam.name), bam)}
+    | map{ bam -> 
+        def meta = [:]
+        meta.ID = bam.simpleName
+        tuple(meta, bam)
+    }
     | set{ barcode_bam_ch }
 
     emit:
