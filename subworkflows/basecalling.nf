@@ -11,7 +11,7 @@ def validateSingleFormat(listOfFormats){
 
 workflow BASECALLING {  
     take:
-    raw_reads
+    raw_read_signal_files
 
     main:
     raw_reads.map{ reads ->
