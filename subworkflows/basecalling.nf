@@ -5,17 +5,17 @@ include { BASECALL; DEMUX } from '../modules/dorado.nf'
 
 def validateSingleFormat(listOfFormats){
     if (listOfFormats.size() != 1) {
-        log.error("there are multiple filetypes of basecalling in ${params.raw_read_dir}: ${listOfFormats} please seperate these into seperte directorys or remove")
+        log.error("Multiple signal filetypes ${listOfFormats} found in '${params.raw_read_dir}'. Please separate filetypes into distinct directories and process indepedently.")
     }
 }
 
 workflow BASECALLING {  
     take:
-    raw_reads
+    raw_read_signal_files
 
     main:
-    raw_reads.map{ reads ->
-        tuple(FilenameUtils.getExtension(reads.toString()), reads)
+    raw_read_signal_files.map{ raw_read_signal_file ->
+        tuple(FilenameUtils.getExtension(raw_read_signal_file.toString()), raw_read_signal_file)
     }
     | groupTuple
     | set{ input_formats }
