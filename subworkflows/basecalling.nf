@@ -5,7 +5,7 @@ include { BASECALL; DEMUX } from '../modules/dorado.nf'
 
 def validateSingleFormat(listOfFormats){
     if (listOfFormats.size() != 1) {
-        log.error("there are multiple filetypes of basecalling in ${params.raw_read_dir}: ${listOfFormats} please seperate these into seperte directorys or remove")
+        log.error("Multiple signal filetypes ${listOfFormats} found in '${params.raw_read_dir}'. Please separate filetypes into distinct directories and process indepedently.")
     }
 }
 
