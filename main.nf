@@ -26,3 +26,7 @@ workflow {
         BASECALLING(raw_reads)
     }
 }
+
+workflow.onComplete {
+        NextflowTool.summary(workflow, params, log)
+}
