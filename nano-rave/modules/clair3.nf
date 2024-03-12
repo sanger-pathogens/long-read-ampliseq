@@ -14,7 +14,7 @@ process CLAIR3_VARIANT_CALLING {
             --ref_fn=${reference} \
             --threads=${task.cpus} \
             --platform="ont" \
-            --model_path="/opt/models/${params.clair3-model}"
+            --model_path="/opt/models/${params.clair3_model}"
             --output=. \
             ${params.clair3_args}
 
