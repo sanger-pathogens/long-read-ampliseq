@@ -78,7 +78,7 @@ workflow BASECALLING {
     emit:
     long_reads_ch
     sequencing_summary
-    //MODEL_DOWNLOAD.out.model_ch //currently not useful as we use 9.4.1 flow cells but later this could be useful
+    //model_ch = MODEL_DOWNLOAD.out.model_ch.map{ pod5, model -> model} //currently not useful as we use 9.4.1 flow cells but later this could be useful
 }
 
 workflow LONG_READ_QC {

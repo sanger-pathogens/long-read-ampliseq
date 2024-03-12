@@ -9,8 +9,7 @@ process MODEL_DOWNLOAD {
     path(pod5)
 
     output:
-    tuple path(pod5), path(basecall_model), emit: called_channel
-    path(basecall_model), emit: model_ch
+    tuple path(pod5), path(basecall_model), emit: model_ch
 
     script:
     basecall_model = "${params.basecall_model}"
@@ -36,7 +35,7 @@ process BASECALL {
     script:
     min_qscore = "${params.min_qscore == "" ? "" : "--min-qscore ${params.min_qscore}"}"
     """
-    dorado basecaller ${model} --trim ${params.trim_adapters} ${pod5} > calls.bam
+    dorado basecaller ${model} --trim ${params.trim_adapters} ${min_qscore} ${pod5} > calls.bam
     """
 }
 

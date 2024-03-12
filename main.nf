@@ -5,6 +5,7 @@
 //
 
 include { BASECALLING } from './subworkflows/basecalling.nf'
+//include { NANO_RAVE   } from './nano-rave/subworkflow/nano-rave.nf'
 
 def logo = NextflowTool.logo(workflow, params.monochrome_logs)
 
