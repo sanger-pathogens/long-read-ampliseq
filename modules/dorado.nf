@@ -1,21 +1,42 @@
+process MODEL_DOWNLOAD {
+    label 'cpu_1'
+    label 'mem_4'
+    label 'time_30m'
+
+    container 'quay.io/sangerpathogens/cuda_dorado:0.5.1'
+    
+    input:
+    path(pod5)
+
+    output:
+    tuple path(pod5), path(basecall_model), emit: called_channel
+    path(basecall_model), emit: model_ch
+
+    script:
+    basecall_model = "${params.basecall_model}"
+    """
+    dorado download --model ${basecall_model}
+    """
+}
+
 process BASECALL {
     label 'cpu_1'
     label 'mem_4'
     label 'time_1'
     label 'gpu'
 
-    container '/data/pam/installs/images/dorado-0.5.1.simg'
+    container 'quay.io/sangerpathogens/cuda_dorado:0.5.1'
     
     input:
-    path(pod5)
+    tuple path(pod5), path(model)
 
     output:
     path("calls.bam"), emit: called_channel
 
     script:
-    basecall_model = "${params.basecall_model == "auto" ? "" : ",${params.basecall_model}"}"
+    min_qscore = "${params.min_qscore == "" ? "" : "--min-qscore ${params.min_qscore}"}"
     """
-    dorado basecaller ${params.basecalling_accuracy}${basecall_model} --trim ${params.trim_adapters} ${pod5} > calls.bam
+    dorado basecaller ${model} --trim ${params.trim_adapters} ${pod5} > calls.bam
     """
 }
 

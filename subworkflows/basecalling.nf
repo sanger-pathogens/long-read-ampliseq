@@ -1,9 +1,9 @@
 import org.apache.commons.io.FilenameUtils
 
-include { CONVERT_FAST5_TO_POD5                     } from '../modules/pod5.nf'
-include { BASECALL; DEMUX; DORADO_SUMMARY           } from '../modules/dorado.nf'
-include { CONVERT_TO_FASTQ; MERGE_BAMS_FOR_SUMMARY  } from '../modules/samtools.nf'
-include { PYCOQC                                    } from '../modules/pycoqc.nf'
+include { CONVERT_FAST5_TO_POD5                            } from '../modules/pod5.nf'
+include { MODEL_DOWNLOAD; BASECALL; DEMUX; DORADO_SUMMARY  } from '../modules/dorado.nf'
+include { CONVERT_TO_FASTQ; MERGE_BAMS_FOR_SUMMARY         } from '../modules/samtools.nf'
+include { PYCOQC                                           } from '../modules/pycoqc.nf'
 
 def validateSingleFormat(listOfFormats){
     if (listOfFormats.size() != 1) {
@@ -48,6 +48,7 @@ workflow BASECALLING {
 
     CONVERT_FAST5_TO_POD5(raw_files.fast5)
     | mix(raw_files.pod5) //files that were already pod5 are added back in after the convert process
+    | MODEL_DOWNLOAD
     | BASECALL
     
     DEMUX(BASECALL.out.called_channel, params.barcode_kit_name) //todo https://github.com/nanoporetech/dorado/issues/625 if list of barcodes provided loop over and call for each
