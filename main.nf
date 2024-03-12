@@ -35,8 +35,8 @@ workflow {
         reference,
         BASECALLING.out.long_reads_ch
     )
+}
 
-    workflow.onComplete {
-        NextflowTool.summary(workflow, params, log)
-    }
+workflow.onComplete {
+    NextflowTool.summary(workflow, params, log)
 }
