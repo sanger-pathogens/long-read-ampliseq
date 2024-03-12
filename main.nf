@@ -6,6 +6,7 @@
 
 include { BASECALLING } from './subworkflows/basecalling.nf'
 //include { NANO_RAVE   } from './nano-rave/subworkflow/nano-rave.nf'
+include { PRE_MAP_QC } from './subworkflows/pre_map_qc.nf'
 include { MAPPING } from './subworkflows/mapping.nf'
 
 def logo = NextflowTool.logo(workflow, params.monochrome_logs)
@@ -30,6 +31,10 @@ workflow {
     
     Channel.fromPath(params.reference)
         .set{ reference }
+
+    PRE_MAP_QC(
+        BASECALLING.out.long_reads_ch
+    )
 
     MAPPING(
         reference,
