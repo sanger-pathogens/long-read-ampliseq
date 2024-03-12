@@ -4,6 +4,9 @@
 // SUBWORKFLOWS
 //
 
+include { BASECALLING } from './subworkflows/basecalling.nf'
+//include { NANO_RAVE   } from './nano-rave/subworkflow/nano-rave.nf'
+
 def logo = NextflowTool.logo(workflow, params.monochrome_logs)
 
 log.info logo
@@ -19,4 +22,12 @@ workflow {
         printHelp()
         exit 0
     }
+    if (params.basecall) {
+        raw_reads = Channel.fromPath("${params.raw_read_dir}/*.{fast5,pod5}", checkIfExists: true)
+        BASECALLING(raw_reads)
+    }
+}
+
+workflow.onComplete {
+        NextflowTool.summary(workflow, params, log)
 }
