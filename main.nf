@@ -6,6 +6,7 @@
 
 include { BASECALLING } from './subworkflows/basecalling.nf'
 //include { NANO_RAVE   } from './nano-rave/subworkflow/nano-rave.nf'
+include { MAPPING } from './subworkflows/mapping.nf'
 
 def logo = NextflowTool.logo(workflow, params.monochrome_logs)
 
@@ -26,8 +27,16 @@ workflow {
         raw_reads = Channel.fromPath("${params.raw_read_dir}/*.{fast5,pod5}", checkIfExists: true)
         BASECALLING(raw_reads)
     }
-}
+    
+    Channel.fromPath(params.reference)
+        .set{ reference }
 
-workflow.onComplete {
+    MAPPING(
+        reference,
+        BASECALLING.out.long_reads_ch
+    )
+
+    workflow.onComplete {
         NextflowTool.summary(workflow, params, log)
+    }
 }
