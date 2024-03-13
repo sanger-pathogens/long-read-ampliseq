@@ -26,8 +26,6 @@ process MERGE_BAMS_FOR_SUMMARY {
     label 'cpu_2'
     label 'mem_1'
     label 'time_1'
-
-    publishDir path: "${params.outdir}/fastqs/", enabled: params.save_fastqs, mode: 'copy', overwrite: true, pattern: "*.fastq.gz"
     
     conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
