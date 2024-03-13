@@ -13,8 +13,7 @@ workflow MAPPING {
     MINIMAP2_INDEX(
         reference
     )
-    MINIMAP2_INDEX.out.ref_mm2_index
-        .set{ ref_mm2_index }
+    | set{ ref_mm2_index }
     
     fastqs.combine(ref_mm2_index)
         .set { minimap2_input }
