@@ -1,4 +1,4 @@
-faprocess FASTQC {
+process FASTQC {
     tag "${meta.ID}"
     label 'cpu_2'
     label 'mem_2'
