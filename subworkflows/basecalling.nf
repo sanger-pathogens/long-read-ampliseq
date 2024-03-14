@@ -1,14 +1,58 @@
 import org.apache.commons.io.FilenameUtils
 
-include { CONVERT_FAST5_TO_POD5                            } from '../modules/pod5.nf'
-include { MODEL_DOWNLOAD; BASECALL; DEMUX; DORADO_SUMMARY  } from '../modules/dorado.nf'
-include { CONVERT_TO_FASTQ; MERGE_BAMS_FOR_SUMMARY         } from '../modules/samtools.nf'
-include { PYCOQC                                           } from '../modules/pycoqc.nf'
+include { CONVERT_FAST5_TO_POD5                                                 } from '../modules/pod5.nf'
+include { MODEL_DOWNLOAD; BASECALL; DEMUX; DORADO_SUMMARY                       } from '../modules/dorado.nf'
+include { CONVERT_TO_FASTQ; MERGE_BAMS_FOR_SUMMARY; REMOVE_DUPLICATES_FROM_BAMS } from '../modules/samtools.nf'
+include { PYCOQC                                                                } from '../modules/pycoqc.nf'
 
 def validateSingleFormat(listOfFormats){
     if (listOfFormats.size() != 1) {
         log.error("Multiple signal filetypes ${listOfFormats} found in '${params.raw_read_dir}'. Please separate filetypes into distinct directories and process indepedently.")
     }
+}
+
+def mark_read_duplicates_in_summary(sequencing_summary, outputFilePath){
+    def filePath = sequencing_summary.toString()
+
+    //make a directory in work if it doesn't exist
+    def baseDir = new File(outputFilePath)
+
+    if(!baseDir.exists()) {
+        baseDir.mkdir()
+    }
+    
+    // Read the TSV file
+    def tsvFile = new File(filePath)
+
+    //make a set to store what we have seen
+    def column2Set = new HashSet<String>()
+    def duplicates=[]
+
+    // Iterate over each line in the file
+    tsvFile.eachLine { line ->
+        // Split the line by tabs
+        def columns = line.split('\t')
+    
+        // Ensure the line has at least two columns
+        if (columns.size() >= 2) {
+            def value = columns[1]
+            if (column2Set.contains(value)) {
+                duplicates << value
+            } else {
+                column2Set.add(value)
+            }
+        }
+    }
+
+    def finalPath = "${baseDir}/duplicates_${workflow.start}.txt"
+
+    def outputFile = new File(finalPath)
+
+    duplicates.each { value ->
+        outputFile.append(value + '\n')
+    }
+
+    return finalPath
 }
 
 workflow BASECALLING {  
@@ -60,19 +104,28 @@ workflow BASECALLING {
         tuple(meta, long_read_bam)
     }
     | set{ barcode_bam_ch }
+
+    LONG_READ_QC(barcode_bam_ch)
+    | set { sequencing_summary }
+
+    if (params.barcode_kit_name.size() >= 2) {
+        sequencing_summary.map{ mark_read_duplicates_in_summary(it, "${workflow.workDir}/summary_duplicates/") }
+        | set { dupliate_read_list }
+
+        barcode_bam_ch.combine(dupliate_read_list)
+        | REMOVE_DUPLICATES_FROM_BAMS
+        | set { bam_ch }
+
+    } else {
+        barcode_bam_ch.set { bam_ch }
+    }
     
     if (params.read_format == "fastq") {
-        CONVERT_TO_FASTQ(barcode_bam_ch)
+        CONVERT_TO_FASTQ(bam_ch)
         | set { long_reads_ch }
-    } else {
-        barcode_bam_ch.set { long_reads_ch }
-    }
 
-    if (params.qc_reads) {
-        LONG_READ_QC(barcode_bam_ch)
-        | set { sequencing_summary }
     } else {
-        sequencing_summary = Channel.of('')
+        bam_ch.set { long_reads_ch }
     }
 
     emit:
