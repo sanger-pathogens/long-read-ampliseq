@@ -20,7 +20,7 @@ def mark_read_duplicates_in_summary(sequencing_summary, outputFilePath){
     if(!baseDir.exists()) {
         baseDir.mkdir()
     }
-    
+
     // Read the TSV file
     def tsvFile = new File(filePath)
 

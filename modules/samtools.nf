@@ -45,7 +45,7 @@ process MERGE_BAMS_FOR_SUMMARY {
 
 process REMOVE_DUPLICATES_FROM_BAMS {
     label 'cpu_2'
-    label 'mem_1'
+    label 'mem_4'
     label 'time_1'
     
     conda 'bioconda::samtools=1.19'
