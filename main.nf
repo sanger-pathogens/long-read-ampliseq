@@ -33,6 +33,9 @@ workflow {
     Channel.fromPath(params.reference)
         .set{ reference }
 
+    Channel.fromPath(params.target_regions_bed)
+        .set{ target_regions_bed }
+
     PRE_MAP_QC(
         BASECALLING.out.long_reads_ch
     )
