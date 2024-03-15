@@ -183,7 +183,7 @@ process SAMTOOLS_DEPTH {
     publishDir "${params.outdir}/${meta.ID}/qc/samtools_coverage", mode: 'copy', overwrite: true
 
     input:
-    tuple val(meta), path(bam_file)
+    tuple val(meta), path(bam_file), path(bam_index)
 
     output:
     tuple val(meta), path(coverage),  emit: samtools_coverage
