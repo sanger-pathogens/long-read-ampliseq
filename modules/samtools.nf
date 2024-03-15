@@ -170,3 +170,27 @@ process GET_READLENGTH_DISTRIBUTION {
     > ${meta.ID}.read-lengths.tsv 
     """
 }
+
+process SAMTOOLS_DEPTH {
+    tag "${meta.ID}"
+    label 'cpu_2'
+    label 'mem_1'
+    label 'time_1'
+
+    conda "bioconda::samtools=1.19"
+    container "quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1"
+
+    publishDir "${params.outdir}/${meta.ID}/qc/samtools_coverage", mode: 'copy', overwrite: true
+
+    input:
+    tuple val(meta), path(bam_file)
+
+    output:
+    tuple val(meta), path(coverage),  emit: samtools_coverage
+
+    script:
+    coverage = "samtools_depth_coverage.tsv"
+    """
+    samtools depth -@ ${task.cpus} -aa *.bam -o ${coverage}
+    """
+}
