@@ -9,7 +9,7 @@ process PYTHON_COVERAGE_OVER_DEFINED_REGIONS {
     // conda "bioconda::pandas=1.5.2"
     // container "quay.io/biocontainers/pandas:1.5.2"
 
-    publishDir "${params.outdir}/${meta.ID}/qc/samtools_coverage", mode: 'copy', overwrite: true
+    publishDir "${params.outdir}/qc/coverage/coverage_summary", mode: 'copy', overwrite: true
 
     input:
     tuple val(meta), path(bam_file), path(bam_index), path(samtools_coverage), path(target_regions_bed)

@@ -77,7 +77,7 @@ process SAMTOOLS_SORT {
     label 'mem_8'
     label 'time_12'
 
-    publishDir "${params.outdir}/${meta.ID}/samtools_sort", enabled: params.keep_sorted_bam, mode: 'copy', overwrite: true
+    publishDir "${params.outdir}/mapped_reads", enabled: params.keep_sorted_bam, mode: 'copy', overwrite: true
 
     conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
@@ -130,7 +130,7 @@ process SAMTOOLS_INDEX_BAM {
     conda "bioconda::samtools=1.19"
     container "quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1"
 
-    publishDir "${params.outdir}/${meta.ID}/samtools_sort", enabled: params.keep_bam_files, mode: 'copy', overwrite: true, pattern: "*.bai"
+    publishDir "${params.outdir}/mapped_reads", enabled: params.keep_bam_files, mode: 'copy', overwrite: true, pattern: "*.bai"
 
     input:
     tuple val(meta), path(bam_file)
@@ -180,17 +180,17 @@ process SAMTOOLS_DEPTH {
     conda "bioconda::samtools=1.19"
     container "quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1"
 
-    publishDir "${params.outdir}/${meta.ID}/qc/samtools_coverage", mode: 'copy', overwrite: true
+    publishDir "${params.outdir}/qc/coverage/samtools_depth", mode: 'copy', overwrite: true
 
     input:
     tuple val(meta), path(bam_file), path(bam_index)
 
     output:
-    tuple val(meta), path(coverage),  emit: samtools_coverage
+    tuple val(meta), path(coverage_report),  emit: samtools_coverage
 
     script:
-    coverage = "samtools_depth_coverage.tsv"
+    coverage_report = "${meta.ID}_samtools_depth.tsv"
     """
-    samtools depth -@ ${task.cpus} -aa *.bam -o ${coverage}
+    samtools depth -@ ${task.cpus} -aa *.bam -o ${coverage_report}
     """
 }
