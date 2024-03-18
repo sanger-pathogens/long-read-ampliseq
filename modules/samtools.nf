@@ -55,7 +55,7 @@ process REMOVE_DUPLICATES_FROM_BAMS {
     tuple val(meta), path(bam), path(duplicates_list)
 
     output:
-    tuple val(meta), path(final_bam),  emit: summary_bam
+    tuple val(meta), path(final_bam), emit: summary_bam
 
     script:
     final_bam = "${bam.simpleName}_clean.bam"
