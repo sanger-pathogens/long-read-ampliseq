@@ -9,7 +9,7 @@ import re
 import argparse
 import csv
 
-# Mat Beale, Wellcome Sanger Institute, July 2022
+# Copyright Mat Beale, Wellcome Sanger Institute, July 2022
 
 description="Takes a bam file and a list of regions, and uses samtools depth to determine the mean depth per region, the normalised depth (useful for CNV detection), and the number of missing (zero coverage) sites per gene. Note that this script currently assumes a single reference chromosome \n"
 
