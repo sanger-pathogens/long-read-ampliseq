@@ -77,7 +77,7 @@ process SAMTOOLS_SORT {
     label 'mem_8'
     label 'time_12'
 
-    publishDir "${params.outdir}/${meta.ID}/samtools_sort", enabled: params.keep_sorted_bam, mode: 'copy', overwrite: true
+    publishDir "${params.outdir}/mapped_reads", enabled: params.keep_sorted_bam, mode: 'copy', overwrite: true
 
     conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
@@ -130,7 +130,7 @@ process SAMTOOLS_INDEX_BAM {
     conda "bioconda::samtools=1.19"
     container "quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1"
 
-    publishDir "${params.outdir}/${meta.ID}/samtools_sort", enabled: params.keep_bam_files, mode: 'copy', overwrite: true, pattern: "*.bai"
+    publishDir "${params.outdir}/mapped_reads", enabled: params.keep_bam_files, mode: 'copy', overwrite: true, pattern: "*.bai"
 
     input:
     tuple val(meta), path(bam_file)
@@ -168,5 +168,29 @@ process GET_READLENGTH_DISTRIBUTION {
     samtools view -@ ${task.cpus} ${sorted_bam} | \
     awk '{print length(\$10)}' | sort | uniq -c | sort -n -k 2 | awk -v OFS='\t' '{print \$2,\$1}' \
     > ${meta.ID}.read-lengths.tsv 
+    """
+}
+
+process SAMTOOLS_DEPTH {
+    tag "${meta.ID}"
+    label 'cpu_2'
+    label 'mem_1'
+    label 'time_1'
+
+    conda "bioconda::samtools=1.19"
+    container "quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1"
+
+    publishDir "${params.outdir}/qc/coverage/samtools_depth", mode: 'copy', overwrite: true
+
+    input:
+    tuple val(meta), path(bam_file), path(bam_index)
+
+    output:
+    tuple val(meta), path(coverage_report),  emit: samtools_coverage
+
+    script:
+    coverage_report = "${meta.ID}_samtools_depth.tsv"
+    """
+    samtools depth -@ ${task.cpus} -aa *.bam -o ${coverage_report}
     """
 }
