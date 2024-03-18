@@ -6,9 +6,6 @@ workflow MAPPING {
     reference
     fastqs
 
-    emit:
-    sorted_reads_bam
-
     main:
     MINIMAP2_INDEX(
         reference
@@ -27,4 +24,7 @@ workflow MAPPING {
 
     SAMTOOLS_INDEX_BAM.out.bam_index
         .set{ sorted_reads_bam }
+    
+    emit:
+    sorted_reads_bam
 } 
