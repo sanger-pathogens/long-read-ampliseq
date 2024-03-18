@@ -26,8 +26,6 @@ process MERGE_BAMS_FOR_SUMMARY {
     label 'cpu_2'
     label 'mem_1'
     label 'time_1'
-
-    publishDir path: "${params.outdir}/fastqs/", enabled: params.save_fastqs, mode: 'copy', overwrite: true, pattern: "*.fastq.gz"
     
     conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
@@ -45,11 +43,31 @@ process MERGE_BAMS_FOR_SUMMARY {
     """
 }
 
+process REMOVE_DUPLICATES_FROM_BAMS {
+    label 'cpu_2'
+    label 'mem_4'
+    label 'time_1'
+
+    conda "bioconda::samtools=1.19"
+    container "quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1"
+
+    input:
+    tuple val(meta), path(bam), path(duplicates_list)
+
+    output:
+    tuple val(meta), path(final_bam), emit: summary_bam
+
+    script:
+    final_bam = "${bam.simpleName}_clean.bam"
+    """
+    samtools view -h ${bam} | grep -vf ${duplicates_list} | samtools view -bS -o ${final_bam}
+    """
+}
+
 process CONVERT_TO_BAM {
     tag "${meta.ID}"
     label 'cpu_2'
     label 'mem_1'
-    label 'time_1'
     
     conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'

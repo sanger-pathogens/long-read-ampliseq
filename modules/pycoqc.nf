@@ -1,6 +1,6 @@
 process PYCOQC {
     container "quay.io/biocontainers/pycoqc:2.5.2--py_0"
-    publishDir "${params.outdir}/pycoqc", mode: 'copy', overwrite: true
+    publishDir "${params.outdir}/qc/pycoqc", mode: 'copy', overwrite: true
     
     input:
         path(sequence_summary_file)
