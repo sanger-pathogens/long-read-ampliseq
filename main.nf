@@ -42,15 +42,15 @@ workflow {
     Channel.fromPath(params.additional_metadata)
         .ifEmpty {exit 1, "${params.additional_metedata} appears to be an empty file!"}
         .splitCsv(header:true, sep:',')
-        .map { meta -> [meta.barcode, meta] }
+        .map { meta -> ["${meta.barcode_kit}_${meta.barcode}", meta] }
         .set { additional_metadata_by_barcode }
 
     BASECALLING.out.long_reads_ch
-        .map { meta, reads -> [meta.barcode, meta, reads]}
+        .map { meta, reads -> ["${meta.barcode_kit}_${meta.barcode}", meta, reads]}
         .set { reads_by_barcode }
 
     additional_metadata_by_barcode.join(reads_by_barcode)
-        .map { barcode, meta1, meta2, reads -> [meta1 + meta2, reads] }
+        .map { barcodekit_barcode, meta1, meta2, reads -> [meta1 + meta2, reads] }
         .set { long_reads_ch }
 
     PRE_MAP_QC(
