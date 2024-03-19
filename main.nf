@@ -5,7 +5,6 @@
 //
 
 include { BASECALLING } from './subworkflows/basecalling.nf'
-//include { NANO_RAVE   } from './nano-rave/subworkflow/nano-rave.nf'
 include { PRE_MAP_QC } from './subworkflows/pre_map_qc.nf'
 include { MAPPING } from './subworkflows/mapping.nf'
 include { POST_MAP_QC } from './subworkflows/post_map_qc.nf'
