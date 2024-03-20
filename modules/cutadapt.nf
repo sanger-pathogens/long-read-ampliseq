@@ -12,7 +12,7 @@ process CUT_PRIMERS {
     tuple val(meta), path(fastq), path(primers)
 
     output:
-    tuple val(meta), path(fastq_trimmed),  emit: trimmed_reads
+    tuple val(meta), path(fastq_trimmed), emit: trimmed_reads
 
     script:
     fastq_trimmed = "${meta.ID}_trimmed.fastq.gz"
