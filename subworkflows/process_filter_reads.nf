@@ -12,7 +12,6 @@ workflow PROCESS_FILTER_READS {
     | combine(primers)
     | set { cutadapt_input }
 
-    cutadapt_input.view()
     
     CUT_PRIMERS(cutadapt_input)
     CUT_PRIMERS.out.trimmed_reads
