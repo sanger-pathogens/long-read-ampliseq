@@ -58,6 +58,7 @@ def mark_read_duplicates_in_summary(sequencing_summary, outputFilePath){
 workflow BASECALLING {  
     take:
     raw_read_signal_files
+    additional_metadata
 
     main:
     //todo add reference aligned basecalling?
@@ -120,8 +121,17 @@ workflow BASECALLING {
         barcode_bam_ch.set { bam_ch }
     }
     
+    bam_ch
+    | map { meta, reads -> ["${meta.barcode_kit}_${meta.barcode}", meta, reads]}
+    | set { bam_by_barcode_ch }
+
+    additional_metadata
+    | join(bam_by_barcode_ch)
+    | map { barcodekit_barcode, meta1, meta2, reads -> [meta1 + meta2, reads] }
+    | set { bam_with_metadata_ch }
+
     if (params.read_format == "fastq") {
-        CONVERT_TO_FASTQ(bam_ch)
+        CONVERT_TO_FASTQ(bam_with_metadata_ch)
         | set { long_reads_ch }
 
     } else {

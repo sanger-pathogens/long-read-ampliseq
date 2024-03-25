@@ -12,13 +12,13 @@ process CONVERT_TO_FASTQ {
     tuple val(meta), path(reads_bam)
 
     output:
-    tuple val(meta), path(kit_barcode_name),  emit: reads_fastq
+    tuple val(meta), path(fastq_output),  emit: reads_fastq
 
     script:
     //will likely need thinking here as if we do other methods of sequencing and use this pipeline need the correct out flags
-    kit_barcode_name = "${meta.barcode_kit}_${meta.barcode}.fastq.gz"
+    fastq_output = "${meta.ID}.fastq.gz"
     """
-    samtools fastq -@ ${task.cpus} -0 ${kit_barcode_name} ${reads_bam}
+    samtools fastq -@ ${task.cpus} -0 ${fastq_output} ${reads_bam}
     """
 }
 
