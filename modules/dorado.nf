@@ -67,7 +67,26 @@ process DORADO_SUMMARY {
     label 'mem_4'
     label 'time_1'
 
-    publishDir path: "${params.outdir}/sequencing_summary/", enabled: params.save_fastqs, mode: 'copy', overwrite: true, pattern: "summary.tsv"
+    publishDir path: "${params.outdir}/sequencing_summary/", mode: 'copy', overwrite: true, pattern: "summary.tsv"
+
+    container 'quay.io/sangerpathogens/cuda_dorado:0.5.1'
+    
+    input:
+    path(called_bam)
+
+    output:
+    path("summary.tsv"), emit: summary_channel
+
+    script:
+    """
+    dorado summary ${called_bam} > summary.tsv
+    """
+}
+
+process UNASSIGNED_SUMMARY { 
+    label 'cpu_1'
+    label 'mem_4'
+    label 'time_1'
 
     container 'quay.io/sangerpathogens/cuda_dorado:0.5.1'
     

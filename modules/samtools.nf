@@ -43,7 +43,7 @@ process MERGE_BAMS_FOR_SUMMARY {
     """
 }
 
-process REMOVE_DUPLICATES_FROM_BAMS {
+process MANAGE_DUPLICATES_FROM_BAMS {
     label 'cpu_2'
     label 'mem_4'
     label 'time_1'
@@ -55,11 +55,11 @@ process REMOVE_DUPLICATES_FROM_BAMS {
     tuple val(meta), path(bam), path(duplicates_list)
 
     output:
-    tuple val(meta), path(final_bam), emit: summary_bam
+    tuple val(meta), path(final_bam), emit: bam
 
     script:
     final_bam = "${bam.simpleName}_clean.bam"
     """
-    samtools view -h ${bam} | grep -vf ${duplicates_list} | samtools view -bS -o ${final_bam}
+    samtools view -N ${duplicates_list} -o ${final_bam} ${bam}
     """
 }

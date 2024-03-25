@@ -1,8 +1,10 @@
 import org.apache.commons.io.FilenameUtils
 
 include { CONVERT_FAST5_TO_POD5                                                 } from '../modules/pod5.nf'
-include { MODEL_DOWNLOAD; BASECALL; DEMUX; DORADO_SUMMARY                       } from '../modules/dorado.nf'
-include { CONVERT_TO_FASTQ; MERGE_BAMS_FOR_SUMMARY; REMOVE_DUPLICATES_FROM_BAMS } from '../modules/samtools.nf'
+include { MODEL_DOWNLOAD; BASECALL; DEMUX; DORADO_SUMMARY; UNASSIGNED_SUMMARY   } from '../modules/dorado.nf'
+include { CONVERT_TO_FASTQ; MERGE_BAMS_FOR_SUMMARY; 
+        MANAGE_DUPLICATES_FROM_BAMS as REMOVE_DUPLICATES_FROM_BAMS;
+        MANAGE_DUPLICATES_FROM_BAMS as KEEP_DUPLICATES_FROM_BAMS                } from '../modules/samtools.nf'
 include { PYCOQC                                                                } from '../modules/pycoqc.nf'
 
 def validateSingleFormat(listOfFormats){
@@ -11,7 +13,7 @@ def validateSingleFormat(listOfFormats){
     }
 }
 
-def mark_read_duplicates_in_summary(sequencing_summary, outputFilePath){
+def mark_read_duplicates_in_summary(sequencing_summary, outputFilePath, keep_or_remove){
     def filePath = sequencing_summary.toString()
 
     //make a directory in work if it doesn't exist
@@ -44,7 +46,8 @@ def mark_read_duplicates_in_summary(sequencing_summary, outputFilePath){
         }
     }
 
-    def finalPath = "${baseDir}/duplicates_${workflow.start}.txt"
+    //for samtools view if the file starts with ^ it removes all entrys from the file instead of keeping them
+    def finalPath = "${ keep_or_remove == "keep" ? "${baseDir}/duplicates_${workflow.start}.txt" : "${baseDir}/^duplicates_${workflow.start}.txt" }"
 
     def outputFile = new File(finalPath)
 
@@ -106,14 +109,22 @@ workflow BASECALLING {
     | set{ barcode_bam_ch }
 
     LONG_READ_QC(barcode_bam_ch)
-    | set { sequencing_summary }
 
     if (params.barcode_kit_name.size() >= 2) {
-        sequencing_summary.map{ mark_read_duplicates_in_summary(it, "${workflow.workDir}/summary_duplicates/") }
-        | set { dupliate_read_list }
 
-        barcode_bam_ch.combine(dupliate_read_list)
+        //sort classified by marking the duplicates in the summary then removing them from the bams
+        LONG_READ_QC.out.summary_channel.map{ mark_read_duplicates_in_summary(it, "${workflow.workDir}/summary_duplicates/", "remove") }
+        | set { dupliate_classified_list }
+
+        barcode_bam_ch.filter{ meta, long_bam -> long_bam.name != "unclassified.bam"}
+        | combine(dupliate_classified_list)
         | REMOVE_DUPLICATES_FROM_BAMS
+
+        //Mark the duplicates that appear in both the unclassified 
+        
+        SORT_UNCLASSIFIED(LONG_READ_QC.out.unclassfied_ch)
+
+        REMOVE_DUPLICATES_FROM_BAMS.out.bam.mix(SORT_UNCLASSIFIED.out)
         | set { bam_ch }
 
     } else {
@@ -130,7 +141,7 @@ workflow BASECALLING {
 
     emit:
     long_reads_ch
-    sequencing_summary
+    LONG_READ_QC.out.summary_channel
     //model_ch = MODEL_DOWNLOAD.out.model_ch.map{ pod5, model -> model} //currently not useful as we use 9.4.1 flow cells but later this could be useful
 }
 
@@ -139,14 +150,69 @@ workflow LONG_READ_QC {
     barcode_bam_ch
     
     main:
+
+    barcode_bam_ch.branch { metaMap, long_bam ->
+        unclassified: metaMap.barcode == "unclassified"
+            return long_bam
+
+        classified: true
+            return long_bam
+    }.set { summarise_channel }
     
-    barcode_bam_ch.map { meta, long_bam -> long_bam }
-        | filter { long_bam -> long_bam.name != "unclassified.bam"}
-        | collect
-        | MERGE_BAMS_FOR_SUMMARY
-        | DORADO_SUMMARY
-        | PYCOQC
+
+    //summarise the bams that have been classified successfully
     
+    summarise_channel.classified.collect()
+    | MERGE_BAMS_FOR_SUMMARY
+    | DORADO_SUMMARY
+    | set{ summary_channel }
+    
+    
+    PYCOQC(summary_channel)
+
+    //if there are multiple barcode kits condense unclassified channel into 1 object to be merged
+    if (params.barcode_kit_name.size() >= 2) {
+        summarise_channel.unclassified.collect()
+        | set{ unclassfied_ch }
+
+    } else {
+        summarise_channel.unclassified
+        | set{ unclassfied_ch }
+    }
+
     emit:
-    DORADO_SUMMARY.out.summary_channel
+    summary_channel
+    unclassfied_ch
+}
+
+workflow SORT_UNCLASSIFIED {
+    take:
+    unclassified
+
+    main:
+    /*
+    This workflow takes in the unclassified bams merges them into a single unclassifed bam - marks the duplicates in that file and produces a 
+    */
+
+    MERGE_BAMS_FOR_SUMMARY(unclassified)
+    | UNASSIGNED_SUMMARY
+    | set{ unclassfied_summary }
+
+    //sort unclassified
+    unclassfied_summary.map{ mark_read_duplicates_in_summary(it, "${workflow.workDir}/unclassified_duplicates/", "keep") }
+    | set{ unclassified_duplicates }
+
+    MERGE_BAMS_FOR_SUMMARY.out.summary_bam
+    | combine(unclassified_duplicates)
+    | map { long_bam, sequencing_summary -> 
+        def unassigned_meta = [:]
+        unassigned_meta.barcode_kit == "Multiple"
+        unassigned_meta.barcode == "Unassigned"
+        tuple( unassigned_meta, long_bam, sequencing_summary)
+    }
+    | KEEP_DUPLICATES_FROM_BAMS
+    | set{ cleaned_unassigned }
+
+    emit:
+    cleaned_unassigned
 }
