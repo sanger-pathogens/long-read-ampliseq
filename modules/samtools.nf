@@ -216,7 +216,7 @@ process SAMTOOLS_DEPTH {
 process SAMTOOLS_STATS {
     label 'cpu_2'
     label 'mem_1'
-    label 'time_1'
+    label 'time_30m'
 
     publishDir "${params.outdir}/qc/samtools_stats", mode: 'copy', overwrite: true
 
