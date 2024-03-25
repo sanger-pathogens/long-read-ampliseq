@@ -37,7 +37,7 @@ workflow {
         .set{ target_regions_bed }
 
     Channel.fromPath(params.additional_metadata)
-        .ifEmpty {exit 1, "${params.additional_metedata} appears to be an empty file!"}
+        .ifEmpty {exit 1, "${params.additional_metadata} appears to be an empty file!"}
         .splitCsv(header:true, sep:',')
         .map { meta -> ["${meta.barcode_kit}_${meta.barcode}", meta] }
         .set { additional_metadata }
