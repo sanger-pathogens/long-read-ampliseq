@@ -1,5 +1,12 @@
-include { GET_READLENGTH_DISTRIBUTION; SAMTOOLS_DEPTH } from '../modules/samtools.nf'
-include { BEDTOOLS_GENOMECOV; BEDTOOLS_COVERAGE } from '../modules/bedtools.nf'
+include {
+    GET_READLENGTH_DISTRIBUTION;
+    SAMTOOLS_DEPTH;
+    SAMTOOLS_STATS    
+} from '../modules/samtools.nf'
+include {
+    BEDTOOLS_GENOMECOV;
+    BEDTOOLS_COVERAGE
+} from '../modules/bedtools.nf'
 include { PYTHON_COVERAGE_OVER_DEFINED_REGIONS } from '../modules/custom.nf'
 
 workflow POST_MAP_QC {
@@ -35,5 +42,9 @@ workflow POST_MAP_QC {
 
     PYTHON_COVERAGE_OVER_DEFINED_REGIONS(
         coverage_over_defined_regions_input
+    )
+
+    SAMTOOLS_STATS(
+        sorted_reads_bam
     )
 }
