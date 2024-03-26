@@ -125,7 +125,7 @@ workflow BASECALLING {
 
         //Mark the duplicates that appear in both the unclassified 
         
-        SORT_UNCLASSIFIED(LONG_READ_QC.out.unclassfied_ch)
+        SORT_UNCLASSIFIED(LONG_READ_QC.out.unclassified_ch)
 
         REMOVE_DUPLICATES_FROM_BAMS.out.bam
         | set { bam_ch }
