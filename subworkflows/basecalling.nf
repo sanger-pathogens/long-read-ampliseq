@@ -47,7 +47,7 @@ def mark_read_duplicates_in_summary(sequencing_summary, outputFilePath, keep_or_
     }
 
     //for samtools view if the file starts with ^ it removes all entrys from the file instead of keeping them
-    def finalPath = "${ keep_or_remove == "keep" ? "${baseDir}/duplicates_${workflow.start}.txt" : "${baseDir}/^duplicates_${workflow.start}.txt" }"
+    def finalPath = "${baseDir}/duplicates_${workflow.runName}.txt"
 
     def outputFile = new File(finalPath)
 
@@ -115,17 +115,19 @@ workflow BASECALLING {
 
         //sort classified by marking the duplicates in the summary then removing them from the bams
         LONG_READ_QC.out.summary_channel.map{ mark_read_duplicates_in_summary(it, "${workflow.workDir}/summary_duplicates/", "remove") }
-        | set { dupliate_classified_list }
+        | set { duplicate_classified_list }
 
         barcode_bam_ch.filter{ meta, long_bam -> long_bam.name != "unclassified.bam"}
-        | combine(dupliate_classified_list)
-        | REMOVE_DUPLICATES_FROM_BAMS
+        | combine(duplicate_classified_list)
+        | set{ marked_for_removal_bam }
+        
+        REMOVE_DUPLICATES_FROM_BAMS(marked_for_removal_bam, "remove")
 
         //Mark the duplicates that appear in both the unclassified 
         
         SORT_UNCLASSIFIED(LONG_READ_QC.out.unclassfied_ch)
 
-        REMOVE_DUPLICATES_FROM_BAMS.out.bam.mix(SORT_UNCLASSIFIED.out)
+        REMOVE_DUPLICATES_FROM_BAMS.out.bam
         | set { bam_ch }
 
     } else {
@@ -142,11 +144,24 @@ workflow BASECALLING {
     | set { bam_with_metadata_ch }
 
     if (params.read_format == "fastq") {
-        CONVERT_TO_FASTQ(bam_with_metadata_ch)
-        | set { long_reads_ch }
+        if (params.barcode_kit_name.size() >= 2) {
+            bam_with_metadata_ch.mix(SORT_UNCLASSIFIED.out.cleaned_unassigned)
+            | CONVERT_TO_FASTQ
+            | set { long_reads_ch }
 
+        } else {
+            CONVERT_TO_FASTQ(bam_with_metadata_ch)
+            | set { long_reads_ch }
+        }
     } else {
-        bam_ch.set { long_reads_ch }
+        if (params.barcode_kit_name.size() >= 2) {
+            bam_with_metadata_ch.mix(SORT_UNCLASSIFIED.out.cleaned_unassigned)
+            | set { long_reads_ch }
+            
+        } else {
+            bam_with_metadata_ch
+            | set { long_reads_ch }
+        }
     }
 
     emit:
@@ -216,11 +231,13 @@ workflow SORT_UNCLASSIFIED {
     | combine(unclassified_duplicates)
     | map { long_bam, sequencing_summary -> 
         def unassigned_meta = [:]
-        unassigned_meta.barcode_kit == "Multiple"
-        unassigned_meta.barcode == "Unassigned"
+        unassigned_meta.barcode_kit = "Multiple"
+        unassigned_meta.barcode = "Unassigned"
         tuple( unassigned_meta, long_bam, sequencing_summary)
     }
-    | KEEP_DUPLICATES_FROM_BAMS
+    | set{ unassigned_marked }
+
+    KEEP_DUPLICATES_FROM_BAMS(unassigned_marked, "keep")
     | set{ cleaned_unassigned }
 
     emit:

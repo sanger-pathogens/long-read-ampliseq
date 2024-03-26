@@ -53,15 +53,21 @@ process MANAGE_DUPLICATES_FROM_BAMS {
 
     input:
     tuple val(meta), path(bam), path(duplicates_list)
+    val(mode)
 
     output:
     tuple val(meta), path(final_bam), emit: bam
 
     script:
     final_bam = "${bam.simpleName}_clean.bam"
-    """
-    samtools view -N ${duplicates_list} -o ${final_bam} ${bam}
-    """
+    if (mode == "keep")
+        """
+        samtools view -N ${duplicates_list} -o ${final_bam} ${bam}
+        """
+    else if (mode == "remove")
+        """
+        samtools view -N ^${duplicates_list} -o ${final_bam} ${bam}
+        """
 }
 
 process CONVERT_TO_BAM {
