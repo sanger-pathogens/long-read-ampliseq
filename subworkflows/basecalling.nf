@@ -198,7 +198,7 @@ workflow LONG_READ_QC {
     //if there are multiple barcode kits condense unclassified channel into 1 object to be merged
     if (params.barcode_kit_name.size() >= 2) {
         summarise_channel.unclassified.collect()
-        | set{ unclassfied_ch }
+        | set{ unclassified_ch }
 
     } else {
         summarise_channel.unclassified
