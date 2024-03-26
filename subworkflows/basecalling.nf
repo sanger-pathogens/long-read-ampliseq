@@ -207,7 +207,7 @@ workflow LONG_READ_QC {
 
     emit:
     summary_channel
-    unclassfied_ch
+    unclassified_ch
 }
 
 workflow SORT_UNCLASSIFIED {
