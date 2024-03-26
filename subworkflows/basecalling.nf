@@ -224,7 +224,7 @@ workflow SORT_UNCLASSIFIED {
     | set{ unclassified_summary }
 
     //sort unclassified
-    unclassfied_summary.map{ mark_read_duplicates_in_summary(it, "${workflow.workDir}/unclassified_duplicates/", "keep") }
+    unclassified_summary.map{ mark_read_duplicates_in_summary(it, "${workflow.workDir}/unclassified_duplicates/", "keep") }
     | set{ unclassified_duplicates }
 
     MERGE_BAMS_FOR_SUMMARY.out.summary_bam
