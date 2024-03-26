@@ -202,7 +202,7 @@ workflow LONG_READ_QC {
 
     } else {
         summarise_channel.unclassified
-        | set{ unclassfied_ch }
+        | set{ unclassified_ch }
     }
 
     emit:
