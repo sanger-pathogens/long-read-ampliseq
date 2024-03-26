@@ -122,6 +122,31 @@ process SAMTOOLS_SORT {
     """
 }
 
+process REMOVE_OFF_TARGET_READS {
+    tag "${meta.ID}"
+    label 'cpu_2'
+    label 'mem_1'
+
+    conda 'bioconda::samtools=1.19'
+    container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
+
+    input:
+    tuple val(meta), path(mapped_reads_bam)
+
+    output:
+    tuple val(meta), path("${on_target_reads_bam}"),  emit: on_target_reads_bam
+
+    script:
+    on_target_reads_bam = "${meta.ID}_on_target.bam"
+    """
+    samtools view \
+        -@ ${task.cpus} \
+        -L ${params.target_regions_bed} \
+        -o ${on_target_reads_bam} \
+        ${mapped_reads_bam}
+    """
+}
+
 process INDEX_REF {
     label 'cpu_2'
     label 'mem_1'
