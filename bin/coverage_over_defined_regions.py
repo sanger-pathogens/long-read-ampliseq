@@ -24,7 +24,7 @@ def parse_args():
     parser.add_argument("-w", dest="wgs", action="store_true", help="Calculate stats for Whole Genome" )
     parser.add_argument("-r", type=str, dest="region", help="Comma separated region positions (<start>,<end>,<name>)" )
     parser.add_argument("-c", type=str, dest="bed", help="BED file (TSV) defining regions (<name>\t<start>\t<end>)" )
-    parser.add_argument("-t", type=str, dest="coverage_threshold", help="Comma separated list of coverage thresholds" )
+    parser.add_argument("-t", type=str, dest="coverage_threshold", help="Comma separated list of coverage thresholds", type=parse_coverage_threshold)
     parser.set_defaults(feature=False)
 
     return parser.parse_args()
