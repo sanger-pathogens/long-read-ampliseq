@@ -8,6 +8,7 @@ import numpy as np
 import re
 import argparse
 import csv
+import logging
 
 from pathlib import Path
 
@@ -27,6 +28,18 @@ def parse_args():
     parser.set_defaults(feature=False)
 
     return parser.parse_args()
+
+def parse_coverage_threshold(coverage_threshold_arg: str) -> list[float]:
+    valid_thresholds = []
+    coverage_thresholds = coverage_threshold_arg.split(",")
+    for threshold in coverage_thresholds:
+        try:
+            valid_threshold = float(threshold)
+        except:
+            logging.error("Given threshold ${treshold} is not a valid threshold value.")
+        valid_thresholds.append(valid_threshold)
+    return valid_thresholds
+
 
 if __name__ == "__main__":
     args = parse_args()
