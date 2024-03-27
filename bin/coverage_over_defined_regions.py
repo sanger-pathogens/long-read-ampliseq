@@ -24,7 +24,7 @@ def parse_args():
     parser.add_argument("-w", dest="wgs", action="store_true", help="Calculate stats for Whole Genome" )
     parser.add_argument("-r", type=str, dest="region", help="Comma separated region positions (<start>,<end>,<name>)" )
     parser.add_argument("-c", type=str, dest="bed", help="BED file (TSV) defining regions (<name>\t<start>\t<end>)" )
-    parser.add_argument("-t", type=str, dest="coverage_threshold", help="Comma separated list of coverage thresholds", type=parse_coverage_threshold)
+    parser.add_argument("-t", type=parse_coverage_threshold, dest="coverage_threshold", help="Comma separated list of coverage thresholds")
     parser.set_defaults(feature=False)
 
     return parser.parse_args()
@@ -36,7 +36,8 @@ def parse_coverage_threshold(coverage_threshold_arg: str) -> list[float]:
         try:
             valid_threshold = float(threshold)
         except:
-            logging.error("Given threshold ${treshold} is not a valid threshold value.")
+            logging.error(f"Given threshold {threshold} is not a valid threshold value.")
+            continue
         valid_thresholds.append(valid_threshold)
     return valid_thresholds
 
