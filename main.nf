@@ -8,9 +8,10 @@ include { INDEX_REF } from './modules/samtools.nf'
 
 include { BASECALLING } from './subworkflows/basecalling.nf'
 include { PRE_MAP_QC } from './subworkflows/pre_map_qc.nf'
-include { MAPPING } from './subworkflows/mapping.nf'
-include { POST_MAP_QC } from './subworkflows/post_map_qc.nf'
 include { PROCESS_FILTER_READS } from './subworkflows/process_filter_reads.nf'
+include { MAPPING } from './subworkflows/mapping.nf'
+include { FILTER_BAM } from './subworkflows/post_map_filtering.nf'
+include { POST_MAP_QC } from './subworkflows/post_map_qc.nf'
 include { CALL_VARIANTS } from './subworkflows/variant_calling.nf'
 
 def logo = NextflowTool.logo(workflow, params.monochrome_logs)
@@ -63,18 +64,25 @@ workflow {
     BASECALLING.out.long_reads_ch.filter{ meta, bam -> meta.barcode != "Unassigned"}
     | set { remove_unassigned_for_mapping }
 
-    MAPPING(
-        reference,
+    PROCESS_FILTER_READS(
         remove_unassigned_for_mapping
     )
 
-    POST_MAP_QC(
+    MAPPING(
+        reference,
+        PROCESS_FILTER_READS.out.trimmed_reads
+    )
+
+    FILTER_BAM(
         MAPPING.out.sorted_reads_bam,
         target_regions_bed
     )
 
-    PROCESS_FILTER_READS(
-        BASECALLING.out.long_reads_ch
+    POST_MAP_QC(
+        MAPPING.out.sorted_reads_bam,
+        FILTER_BAM.out.on_target_reads_bam,
+        FILTER_BAM.out.off_target_reads_bam,
+        target_regions_bed
     )
 
     //for now until we decide filter logic we can just do some basic variant calling (large unfiltered data though)
