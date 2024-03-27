@@ -14,7 +14,9 @@ process CLAIR3_CALL {
 
     output:
     tuple val(meta), path("merge_output.gvcf.gz"), emit: clair3_out
+    tuple val(meta), path("pileup.vcf.gz"), path(reference), path(reference_index),  emit: vcf_out
     path("run_clair3.log")
+
 
     script:
     """
