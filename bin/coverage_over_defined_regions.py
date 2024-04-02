@@ -42,11 +42,11 @@ def parse_coverage_threshold(coverage_threshold_arg: str) -> list[float]:
     return valid_thresholds
 
 
-def get_covwindow(mydepth, mystart, myend, region_name):
+def get_covwindow(depth_per_base, start, end, region_name):
     """
     Extract depth for a given region and calculate summary coverage stats
     """
-    genedepth = mydepth.loc[(mydepth['Pos']>=int(mystart)-1) & (mydepth['Pos']<=int(myend)-1)]
+    genedepth = depth_per_base.loc[(depth_per_base['Pos']>=int(start)-1) & (depth_per_base['Pos']<=int(end)-1)]
     gene_length = len(list(genedepth['Cov']))
     missing_sites = len(list(genedepth['Cov'][genedepth['Cov']==0]))
     gene_median = round(np.median(genedepth['Cov']),1)
@@ -61,7 +61,7 @@ def get_covwindow(mydepth, mystart, myend, region_name):
     perc100x = round((len(list(genedepth['Cov'][genedepth['Cov']>=100]))/gene_length)*100,1)
     perc250x = round((len(list(genedepth['Cov'][genedepth['Cov']>=250]))/gene_length)*100,1)
 
-    return [mysamplename, region_name, str(mystart), str(myend), str(gene_length), str(missing_sites), str(gene_median), str(meancov), str(mincov), str(maxcov), str(perc1x), str(perc5x), str(perc8x), str(perc20x), str(perc100x), str(perc250x)]
+    return [mysamplename, region_name, str(start), str(end), str(gene_length), str(missing_sites), str(gene_median), str(meancov), str(mincov), str(maxcov), str(perc1x), str(perc5x), str(perc8x), str(perc20x), str(perc100x), str(perc250x)]
 
 
 def get_percent_coverage_at_threshold(depth_per_base: pd.Series, threshold: float) -> float:
