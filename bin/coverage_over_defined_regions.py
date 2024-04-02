@@ -19,11 +19,9 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Takes a bam file and a list of regions, and uses samtools depth to determine the mean depth per region, the normalised depth (useful for CNV detection), and the number of missing (zero coverage) sites per gene. Note that this script currently assumes a single reference chromosome."
     )
-    parser.add_argument("-s", type=str, dest="samtools_depth",help="Specify path to output from `samtools depth`")
+    parser.add_argument("-s", type=Path, dest="samtools_depth",help="Specify path to output from `samtools depth`")
     parser.add_argument("-b", type=Path, dest="bam_file",help="Specify input bam file")
-    parser.add_argument("-w", dest="wgs", action="store_true", help="Calculate stats for Whole Genome" )
-    parser.add_argument("-r", type=str, dest="region", help="Comma separated region positions (<start>,<end>,<name>)" )
-    parser.add_argument("-c", type=str, dest="bed", help="BED file (TSV) defining regions (<name>\t<start>\t<end>)" )
+    parser.add_argument("-c", type=Path, dest="bed", help="BED file (TSV) defining regions (<chrom>\t<start>\t<end>\t<name>)" )
     parser.add_argument("-t", type=parse_coverage_threshold, dest="coverage_threshold", help="Comma separated list of coverage thresholds")
     parser.set_defaults(feature=False)
 
@@ -42,32 +40,87 @@ def parse_coverage_threshold(coverage_threshold_arg: str) -> list[float]:
     return valid_thresholds
 
 
-def get_covwindow(depth_per_base, start, end, region_name):
+class Region:
+    def __init__(self, genome_depth_per_base: pd.DataFrame, start: int, end: int, name: str, sample: str, coverage_thresholds:list[float] = []):
+        self.region_depth = self._get_region_depth_per_base(genome_depth_per_base, start, end)
+        self.start = start
+        self.end = end
+        self.name = name
+        self.sample = sample
+        self.summary_stats = self._get_summary_stats()
+        self.coverage = self.get_percent_coverage(coverage_thresholds)
+
+    def _get_summary_stats(self) -> dict:
+        depth_per_base = self.region_depth
+        return {
+            "length": len(depth_per_base['Cov']),
+            "missing_sites": sum(depth_per_base['Cov'] == 0),
+            "median": np.median(depth_per_base['Cov']),
+            "mean": np.mean(depth_per_base['Cov']),
+            "min": np.min(depth_per_base['Cov']),
+            "max": np.max(depth_per_base['Cov']),
+        }
+    
+    def get_percent_coverage(self, thresholds: list = []) -> dict:
+        if len(thresholds) == 0:
+            return {}
+        coverage_at_thresholds = {}
+        for threshold in thresholds:
+            coverage_at_thresholds[f"cov_perc_{threshold}x"] = self._get_percent_coverage_at_threshold(threshold)
+        return coverage_at_thresholds
+
+    def _get_percent_coverage_at_threshold(self, threshold: float) -> float:
+        """
+        Compute percentage of bases covered at given (coverage) threshold
+        """
+        return (sum(self.region_depth['Cov'] >= threshold) / len(self.region_depth)) * 100
+    
+    @staticmethod
+    def _get_region_depth_per_base(genome_depth_per_base: pd.DataFrame, start: int, end: int) -> pd.DataFrame:
+        return genome_depth_per_base.loc[(genome_depth_per_base['Pos'] >= int(start)-1) & (genome_depth_per_base['Pos'] <= int(end)-1)]
+
+    def to_dict(self):
+        return {k: v for (k, v) in vars(self).items() if not k.startswith("_") and not callable(v)}
+
+    def to_row(self):
+        row = self.to_dict()
+        keys_to_remove = ["region_depth", "summary_stats", "coverage"]
+        for k in keys_to_remove:
+            del row[k]
+        row.update(self.summary_stats)
+        row.update(self.coverage)
+        return row
+    
+    
+
+
+
+def get_covwindow(depth_per_base, start, end, region_name, sample, thresholds):
     """
     Extract depth for a given region and calculate summary coverage stats
     """
     region_depth = get_region_depth_per_base(depth_per_base, start, end)
-    region_length = len(region_depth['Cov'])
-    missing_sites = sum(region_depth['Cov'] == 0)
-    region_median = np.median(region_depth['Cov'])
-    region_mean = np.mean(region_depth['Cov'])
-    mincov = np.min(region_depth['Cov'])
-    maxcov = np.max(region_depth['Cov'])
-    perc1x = round((len(list(region_depth['Cov'][region_depth['Cov']>=1]))/region_length)*100,1)
-    perc5x = round((len(list(region_depth['Cov'][region_depth['Cov']>=5]))/region_length)*100,1)
-    perc8x = round((len(list(region_depth['Cov'][region_depth['Cov']>=8]))/region_length)*100,1)
-    perc20x = round((len(list(region_depth['Cov'][region_depth['Cov']>=20]))/region_length)*100,1)
-    perc100x = round((len(list(region_depth['Cov'][region_depth['Cov']>=100]))/region_length)*100,1)
-    perc250x = round((len(list(region_depth['Cov'][region_depth['Cov']>=250]))/region_length)*100,1)
+    summary_stats = compute_region_summary_stats(region_depth)
+    coverage_at_thresholds = compute_region_percent_coverage_over_thresholds(depth_per_base, thresholds)
 
-    return [mysamplename, region_name, str(start), str(end), str(region_length), str(missing_sites), str(region_median), str(region_mean), str(mincov), str(maxcov), str(perc1x), str(perc5x), str(perc8x), str(perc20x), str(perc100x), str(perc250x)]
+    summary_stat_order = ["length", "missing_sites", "median", "mean", "min", "max"]
+    coverage_order = sorted(coverage_at_thresholds.keys())
+
+    output_region_stats = [sample, region_name, start, end]
+    output_region_stats.extend([summary_stats[k] for k in summary_stat_order])
+    output_region_stats.extend([coverage_at_thresholds[k] for k in coverage_order])
+
+    return output_region_stats
 
 
 def get_percent_coverage_at_threshold(depth_per_base: pd.Series, threshold: float) -> float:
     """
     Compute percentage of bases covered at given (coverage) threshold and round to 1 decimal place
     """
-    percent_coverage = sum(depth_per_base >= threshold) / len(depth_per_base) * 100
+    print(depth_per_base['Cov'] >= threshold)
+    percent_coverage = (sum(depth_per_base['Cov'] >= threshold) / len(depth_per_base)) * 100
+    print(percent_coverage)
+    exit
     return round(percent_coverage, 1)
 
 
@@ -89,55 +142,46 @@ def compute_region_summary_stats(depth_per_base: pd.DataFrame) -> dict:
 def compute_region_percent_coverage_over_thresholds(depth_per_base: pd.DataFrame, thresholds: list) -> dict:
     coverage_at_thresholds = {}
     for threshold in thresholds:
-        coverage_at_thresholds[f"perc{threshold}x"] = get_percent_coverage_at_threshold(depth_per_base, threshold)
+        coverage_at_thresholds[f"cov_perc_{threshold}x"] = get_percent_coverage_at_threshold(depth_per_base, threshold)
     return coverage_at_thresholds
 
+
+def dataframe_from_rows(rows: list[dict], header_override: dict = None, header_order: list = []) -> pd.DataFrame:
+    df = pd.DataFrame(rows)
+    if header_override is not None:
+        df = df.rename(columns=header_override)
+    if len(header_order) == 0:
+        header_order = sorted(df.columns)
+    return df[header_order]
+    
 
 if __name__ == "__main__":
     args = parse_args()
     bam_file = args.bam_file
 
     # Get sequence name 
-    mysamplename = bam_file.stem
+    sample_name = bam_file.stem
 
-    mydepth = pd.read_csv(args.samtools_depth, sep='\t',index_col=0, header=None,names=['Ref','Pos','Cov'])
+    mydepth = pd.read_csv(args.samtools_depth, sep='\t', index_col=0, header=None, names=['Ref','Pos','Cov'])
 
     # Anything that isn't covered (is na) make 0
     mydepth[pd.isnull(mydepth['Cov'])] = 0
 
-    # Calculate genomewide median and mean coverage (median is probably more reliable here)
-    full_median = np.median(mydepth['Cov'])
-    full_mean = np.mean(mydepth['Cov'])
-    wgs_length = len(list(mydepth['Pos']))
-
-
-
-    header = ["Sample", "Region", "StartPos", "EndPos", "Length", "Missing_Sites", "Median_Cov", "Mean_Cov", "Min_Cov", "Max_Cov", "cov1x.perc", "cov5x.perc", "cov8x.perc", "cov20x.perc", "cov100x.perc", "cov250x.perc"]
-    dfout = pd.DataFrame(columns = header)
-
-    # Run function on a whole genome
-    if args.wgs :
-        region_cov_summary = get_covwindow(mydepth, "1", wgs_length, "WGS")
-        dfout = pd.concat([pd.DataFrame([region_cov_summary], columns=header)], ignore_index=True)
-
-
-    # Run function on a single region
-    if args.region :
-        myregion = [s.strip() for s in args.region.split(",")]
-        region_cov_summary = get_covwindow(mydepth, myregion[0], myregion[1], myregion[2])
-        dfout = pd.concat([pd.DataFrame([region_cov_summary], columns=header)], ignore_index=True)
-
-
-
     # Run function on a csv list of regions
+    header_override = {"median": "depth_median", "mean": "depth_mean", "min": "depth_min", "max": "depth_max"}
+    header = ["sample", "name", "start", "end", "length", "missing_sites", "depth_median", "depth_mean", "depth_min", "depth_max"]
+    coverage_threshold_headers = [f"cov_perc_{threshold}x" for threshold in args.coverage_threshold]
+    header.extend(coverage_threshold_headers)
     if args.bed : 
         bed_file = pd.read_csv(args.bed, header=None, sep='\t')
-        print(bed_file)
+        rows = []
         for myline in range(0, len(bed_file.index)):
-            region_cov_summary = get_covwindow(mydepth, bed_file.iloc[myline,1], bed_file.iloc[myline,2], bed_file.iloc[myline,0])
-            dfout = pd.concat([dfout, pd.DataFrame([region_cov_summary], columns=header)], ignore_index=True)
+            region = Region(mydepth, bed_file.iloc[myline,1], bed_file.iloc[myline,2], bed_file.iloc[myline,3], sample_name, args.coverage_threshold)
+            rows.append(region.to_row())
+        dfout = dataframe_from_rows(rows, header_override, header_order=header)
+            # region_cov_summary = get_covwindow(mydepth, bed_file.iloc[myline,1], bed_file.iloc[myline,2], bed_file.iloc[myline,0], sample_name, args.coverage_threshold)
+            # print(region_cov_summary)
+            # dfout = pd.concat([dfout, pd.DataFrame([region_cov_summary], columns=header)], ignore_index=True)
 
-
-    #print(dfout)
-    dfout.to_csv(mysamplename + ".depth.tsv", sep="\t", index=False, header=True)
+    dfout.to_csv(sample_name + ".depth.tsv", sep="\t", index=False, header=True)
 
