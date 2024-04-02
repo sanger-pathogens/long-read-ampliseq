@@ -71,6 +71,27 @@ def get_percent_coverage_at_threshold(depth_per_base: pd.Series, threshold: floa
     return round(percent_coverage, 1)
 
 
+def get_region_depth_per_base(genome_depth_per_base: pd.DataFrame, start: int, end: int) -> pd.DataFrame:
+    return genome_depth_per_base.loc[(genome_depth_per_base['Pos'] >= int(start)-1) & (genome_depth_per_base['Pos'] <= int(end)-1)]
+
+
+def compute_region_summary_stats(depth_per_base: pd.DataFrame) -> dict:
+    return {
+        "length": len(depth_per_base['Cov']),
+        "missing_sites": sum(depth_per_base['Cov'] == 0),
+        "median": np.median(depth_per_base['Cov']),
+        "mean": np.mean(depth_per_base['Cov']),
+        "min": np.min(depth_per_base['Cov']),
+        "max": np.max(depth_per_base['Cov']),
+    }
+
+
+def compute_region_percent_coverage_over_thresholds(depth_per_base: pd.DataFrame, thresholds: list) -> dict:
+    coverage_at_thresholds = {}
+    for threshold in thresholds:
+        coverage_at_thresholds[f"perc{threshold}x"] = get_percent_coverage_at_threshold(depth_per_base, threshold)
+    return coverage_at_thresholds
+
 
 if __name__ == "__main__":
     args = parse_args()
