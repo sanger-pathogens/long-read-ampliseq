@@ -20,7 +20,7 @@ def parse_args():
         description="Takes a bam file and a list of regions, and uses samtools depth to determine the mean depth per region, the normalised depth (useful for CNV detection), and the number of missing (zero coverage) sites per gene. Note that this script currently assumes a single reference chromosome."
     )
     parser.add_argument("-s", type=str, dest="samtools_depth",help="Specify path to output from `samtools depth`")
-    parser.add_argument("-b", type=str, dest="bam_file",help="Specify input bam file")
+    parser.add_argument("-b", type=Path, dest="bam_file",help="Specify input bam file")
     parser.add_argument("-w", dest="wgs", action="store_true", help="Calculate stats for Whole Genome" )
     parser.add_argument("-r", type=str, dest="region", help="Comma separated region positions (<start>,<end>,<name>)" )
     parser.add_argument("-c", type=str, dest="bed", help="BED file (TSV) defining regions (<name>\t<start>\t<end>)" )
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     bam_file = args.bam_file
 
     # Get sequence name 
-    mysamplename = re.sub("^.+/","",re.sub(".bam","", bam_file))
+    mysamplename = bam_file.stem
 
     mydepth = pd.read_csv(args.samtools_depth, sep='\t',index_col=0, header=None,names=['Ref','Pos','Cov'])
 
