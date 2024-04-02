@@ -36,10 +36,33 @@ def parse_coverage_threshold(coverage_threshold_arg: str) -> list[float]:
         try:
             valid_threshold = float(threshold)
         except:
-            logging.error(f"Given threshold {threshold} is not a valid threshold value.")
-            continue
+            logging.error(f"Given threshold '{threshold}' is not a valid threshold value.")
+            sys.exit(1)
         valid_thresholds.append(valid_threshold)
     return valid_thresholds
+
+
+def get_covwindow(all_cov, mystart, myend, region_name):
+    """
+    Extract depth for a given region and calculate summary coverage stats
+    """
+    genedepth = mydepth.loc[(mydepth['Pos']>=int(mystart)-1) & (mydepth['Pos']<=int(myend)-1)]
+    gene_length = len(list(genedepth['Cov']))
+    missing_sites = len(list(genedepth['Cov'][genedepth['Cov']==0]))
+    gene_median = round(np.median(genedepth['Cov']),1)
+    gene_mean = np.mean(genedepth['Cov'])
+    mincov = np.min(genedepth['Cov'])
+    maxcov = np.max(genedepth['Cov'])
+    meancov = round(gene_mean,1)
+    normcov = round(gene_mean/full_median,1)
+    perc1x = round((len(list(genedepth['Cov'][genedepth['Cov']>=1]))/gene_length)*100,1)
+    perc5x = round((len(list(genedepth['Cov'][genedepth['Cov']>=5]))/gene_length)*100,1)
+    perc8x = round((len(list(genedepth['Cov'][genedepth['Cov']>=8]))/gene_length)*100,1)
+    perc20x = round((len(list(genedepth['Cov'][genedepth['Cov']>=20]))/gene_length)*100,1)
+    perc100x = round((len(list(genedepth['Cov'][genedepth['Cov']>=100]))/gene_length)*100,1)
+    perc250x = round((len(list(genedepth['Cov'][genedepth['Cov']>=250]))/gene_length)*100,1)
+
+    return [mysamplename, region_name, str(mystart), str(myend), str(gene_length), str(missing_sites), str(gene_median), str(meancov), str(mincov), str(maxcov), str(normcov), str(perc1x), str(perc5x), str(perc8x), str(perc20x), str(perc100x), str(perc250x)]
 
 
 if __name__ == "__main__":
@@ -54,31 +77,10 @@ if __name__ == "__main__":
     # Anything that isn't covered (is na) make 0
     mydepth[pd.isnull(mydepth['Cov'])] = 0
 
-
     # Calculate genomewide median and mean coverage (median is probably more reliable here)
     full_median = np.median(mydepth['Cov'])
     full_mean = np.mean(mydepth['Cov'])
     wgs_length = len(list(mydepth['Pos']))
-
-    # Now define a function to extract a region and calculate some summary coverage stats
-    def get_covwindow(all_cov, mystart, myend, region_name):
-        genedepth = mydepth.loc[(mydepth['Pos']>=int(mystart)-1) & (mydepth['Pos']<=int(myend)-1)]
-        gene_length = len(list(genedepth['Cov']))
-        missing_sites = len(list(genedepth['Cov'][genedepth['Cov']==0]))
-        gene_median = round(np.median(genedepth['Cov']),1)
-        gene_mean = np.mean(genedepth['Cov'])
-        mincov = np.min(genedepth['Cov'])
-        maxcov = np.max(genedepth['Cov'])
-        meancov = round(gene_mean,1)
-        normcov = round(gene_mean/full_median,1)
-        perc1x = round((len(list(genedepth['Cov'][genedepth['Cov']>=1]))/gene_length)*100,1)
-        perc5x = round((len(list(genedepth['Cov'][genedepth['Cov']>=5]))/gene_length)*100,1)
-        perc8x = round((len(list(genedepth['Cov'][genedepth['Cov']>=8]))/gene_length)*100,1)
-        perc20x = round((len(list(genedepth['Cov'][genedepth['Cov']>=20]))/gene_length)*100,1)
-        perc100x = round((len(list(genedepth['Cov'][genedepth['Cov']>=100]))/gene_length)*100,1)
-        perc250x = round((len(list(genedepth['Cov'][genedepth['Cov']>=250]))/gene_length)*100,1)
-
-        return[mysamplename, region_name, str(mystart), str(myend), str(gene_length), str(missing_sites), str(gene_median), str(meancov), str(mincov), str(maxcov), str(normcov), str(perc1x), str(perc5x), str(perc8x), str(perc20x), str(perc100x), str(perc250x)]
 
 
 
