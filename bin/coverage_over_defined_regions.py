@@ -46,22 +46,21 @@ def get_covwindow(depth_per_base, start, end, region_name):
     """
     Extract depth for a given region and calculate summary coverage stats
     """
-    genedepth = depth_per_base.loc[(depth_per_base['Pos']>=int(start)-1) & (depth_per_base['Pos']<=int(end)-1)]
-    gene_length = len(list(genedepth['Cov']))
-    missing_sites = len(list(genedepth['Cov'][genedepth['Cov']==0]))
-    gene_median = round(np.median(genedepth['Cov']),1)
-    gene_mean = np.mean(genedepth['Cov'])
-    mincov = np.min(genedepth['Cov'])
-    maxcov = np.max(genedepth['Cov'])
-    meancov = round(gene_mean,1)
-    perc1x = round((len(list(genedepth['Cov'][genedepth['Cov']>=1]))/gene_length)*100,1)
-    perc5x = round((len(list(genedepth['Cov'][genedepth['Cov']>=5]))/gene_length)*100,1)
-    perc8x = round((len(list(genedepth['Cov'][genedepth['Cov']>=8]))/gene_length)*100,1)
-    perc20x = round((len(list(genedepth['Cov'][genedepth['Cov']>=20]))/gene_length)*100,1)
-    perc100x = round((len(list(genedepth['Cov'][genedepth['Cov']>=100]))/gene_length)*100,1)
-    perc250x = round((len(list(genedepth['Cov'][genedepth['Cov']>=250]))/gene_length)*100,1)
+    region_depth = get_region_depth_per_base(depth_per_base, start, end)
+    region_length = len(region_depth['Cov'])
+    missing_sites = sum(region_depth['Cov'] == 0)
+    region_median = np.median(region_depth['Cov'])
+    region_mean = np.mean(region_depth['Cov'])
+    mincov = np.min(region_depth['Cov'])
+    maxcov = np.max(region_depth['Cov'])
+    perc1x = round((len(list(region_depth['Cov'][region_depth['Cov']>=1]))/region_length)*100,1)
+    perc5x = round((len(list(region_depth['Cov'][region_depth['Cov']>=5]))/region_length)*100,1)
+    perc8x = round((len(list(region_depth['Cov'][region_depth['Cov']>=8]))/region_length)*100,1)
+    perc20x = round((len(list(region_depth['Cov'][region_depth['Cov']>=20]))/region_length)*100,1)
+    perc100x = round((len(list(region_depth['Cov'][region_depth['Cov']>=100]))/region_length)*100,1)
+    perc250x = round((len(list(region_depth['Cov'][region_depth['Cov']>=250]))/region_length)*100,1)
 
-    return [mysamplename, region_name, str(start), str(end), str(gene_length), str(missing_sites), str(gene_median), str(meancov), str(mincov), str(maxcov), str(perc1x), str(perc5x), str(perc8x), str(perc20x), str(perc100x), str(perc250x)]
+    return [mysamplename, region_name, str(start), str(end), str(region_length), str(missing_sites), str(region_median), str(region_mean), str(mincov), str(maxcov), str(perc1x), str(perc5x), str(perc8x), str(perc20x), str(perc100x), str(perc250x)]
 
 
 def get_percent_coverage_at_threshold(depth_per_base: pd.Series, threshold: float) -> float:
