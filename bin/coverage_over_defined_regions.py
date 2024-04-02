@@ -54,7 +54,6 @@ def get_covwindow(all_cov, mystart, myend, region_name):
     mincov = np.min(genedepth['Cov'])
     maxcov = np.max(genedepth['Cov'])
     meancov = round(gene_mean,1)
-    normcov = round(gene_mean/full_median,1)
     perc1x = round((len(list(genedepth['Cov'][genedepth['Cov']>=1]))/gene_length)*100,1)
     perc5x = round((len(list(genedepth['Cov'][genedepth['Cov']>=5]))/gene_length)*100,1)
     perc8x = round((len(list(genedepth['Cov'][genedepth['Cov']>=8]))/gene_length)*100,1)
@@ -62,7 +61,7 @@ def get_covwindow(all_cov, mystart, myend, region_name):
     perc100x = round((len(list(genedepth['Cov'][genedepth['Cov']>=100]))/gene_length)*100,1)
     perc250x = round((len(list(genedepth['Cov'][genedepth['Cov']>=250]))/gene_length)*100,1)
 
-    return [mysamplename, region_name, str(mystart), str(myend), str(gene_length), str(missing_sites), str(gene_median), str(meancov), str(mincov), str(maxcov), str(normcov), str(perc1x), str(perc5x), str(perc8x), str(perc20x), str(perc100x), str(perc250x)]
+    return [mysamplename, region_name, str(mystart), str(myend), str(gene_length), str(missing_sites), str(gene_median), str(meancov), str(mincov), str(maxcov), str(perc1x), str(perc5x), str(perc8x), str(perc20x), str(perc100x), str(perc250x)]
 
 
 def get_percent_coverage_at_threshold(depth_per_base: pd.Series, threshold: float) -> float:
@@ -93,7 +92,7 @@ if __name__ == "__main__":
 
 
 
-    header = ["Sample", "Region", "StartPos", "EndPos", "Length", "Missing_Sites", "Median_Cov", "Mean_Cov", "Min_Cov", "Max_Cov", "Genome_Norm_Cov", "cov1x.perc", "cov5x.perc", "cov8x.perc", "cov20x.perc", "cov100x.perc", "cov250x.perc"]
+    header = ["Sample", "Region", "StartPos", "EndPos", "Length", "Missing_Sites", "Median_Cov", "Mean_Cov", "Min_Cov", "Max_Cov", "cov1x.perc", "cov5x.perc", "cov8x.perc", "cov20x.perc", "cov100x.perc", "cov250x.perc"]
     dfout = pd.DataFrame(columns = header)
 
     # Run function on a whole genome
