@@ -65,6 +65,15 @@ def get_covwindow(all_cov, mystart, myend, region_name):
     return [mysamplename, region_name, str(mystart), str(myend), str(gene_length), str(missing_sites), str(gene_median), str(meancov), str(mincov), str(maxcov), str(normcov), str(perc1x), str(perc5x), str(perc8x), str(perc20x), str(perc100x), str(perc250x)]
 
 
+def get_percent_coverage_at_threshold(depth_per_base: pd.Series, threshold: float) -> float:
+    """
+    Compute percentage of bases covered at given (coverage) threshold and round to 1 decimal place
+    """
+    percent_coverage = sum(depth_per_base >= threshold) / len(depth_per_base) * 100
+    return round(percent_coverage, 1)
+
+
+
 if __name__ == "__main__":
     args = parse_args()
     bam_file = args.bam_file
