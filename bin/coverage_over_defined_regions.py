@@ -42,7 +42,7 @@ def parse_coverage_threshold(coverage_threshold_arg: str) -> list[float]:
     return valid_thresholds
 
 
-def get_covwindow(all_cov, mystart, myend, region_name):
+def get_covwindow(mydepth, mystart, myend, region_name):
     """
     Extract depth for a given region and calculate summary coverage stats
     """
