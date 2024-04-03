@@ -74,6 +74,7 @@ process CONVERT_TO_BAM {
     tag "${meta.ID}"
     label 'cpu_2'
     label 'mem_1'
+    label 'time_30m'
     
     conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
@@ -126,6 +127,7 @@ process REMOVE_OFF_TARGET_READS {
     tag "${meta.ID}"
     label 'cpu_2'
     label 'mem_1'
+    label 'time_30m'
 
     conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
@@ -154,6 +156,7 @@ process COUNT_ON_AND_OFF_TARGET_READS {
     tag "${meta.ID}"
     label 'cpu_2'
     label 'mem_1'
+    label 'time_30m'
 
     publishDir "${params.outdir}/qc/bam_filtering", mode: 'copy', overwrite: true
 
