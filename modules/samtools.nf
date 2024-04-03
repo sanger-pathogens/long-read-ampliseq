@@ -131,7 +131,7 @@ process REMOVE_OFF_TARGET_READS {
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
 
     input:
-    tuple val(meta), path(sorted_reads_bam), path(target_regions_bed)
+    tuple val(meta), path(sorted_reads_bam), path(sorted_reads_bai), path(target_regions_bed)
 
     output:
     tuple val(meta), path("${on_target_reads_bam}"),  emit: on_target_reads_bam
