@@ -27,10 +27,13 @@ process CLAIR3_CALL {
     --platform="ont" \
     --model_path="/opt/models/${params.clair3_model}" \
     --output=. \
+    --sample_name=${meta.ID} \
     --bed_fn=${target_regions_bed} \
     --no_phasing_for_fa \
     --include_all_ctgs \
     --haploid_precise \
+    --call_snp_only \
+    --keep_iupac_bases \
     --gvcf
     """
 }
