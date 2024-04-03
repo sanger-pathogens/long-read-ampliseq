@@ -151,8 +151,6 @@ def write_sequence(filepath, multifasta, fasta_id, sequence_list):
             SeqIO.write(record, output, "fasta")
                 
 
-
-
 if __name__ == '__main__':
     parser = argparser()
     args = parser.parse_args()
