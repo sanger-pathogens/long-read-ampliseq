@@ -87,7 +87,7 @@ workflow {
 
     //for now until we decide filter logic we can just do some basic variant calling (large unfiltered data though)
     CALL_VARIANTS(
-        MAPPING.out.sorted_reads_bam.combine(target_regions_bed),
+        FILTER_BAM.out.on_target_reads_bam.combine(target_regions_bed),
         reference_index_ch
     )
 }
