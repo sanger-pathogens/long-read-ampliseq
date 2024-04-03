@@ -2,7 +2,7 @@ include {
     GET_READLENGTH_DISTRIBUTION;
     SAMTOOLS_DEPTH;
     SAMTOOLS_STATS;
-    COUNT_ON_AND_OFF_TARGET_READS;
+    COUNT_ON_AND_OFF_TARGET_READS
 } from '../modules/samtools.nf'
 include {
     BEDTOOLS_GENOMECOV;
