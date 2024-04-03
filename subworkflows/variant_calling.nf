@@ -15,7 +15,7 @@ workflow CALL_VARIANTS {
     GUNZIP( CLAIR3_CALL.out.vcf_out )
     | CURATE_CONSENSUS
 
-    CURATE_CONSENSUS.out.multi_locus.collectFile { meta, file -> [ "merged.fasta", file ] }
+    CURATE_CONSENSUS.out.full_consensus.collectFile { meta, file -> [ "merged.fasta", file ] }
     | CONSTRUCT_PHYLO
 
     emit:
