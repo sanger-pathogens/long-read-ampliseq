@@ -6,7 +6,7 @@ process CLAIR3_CALL {
 
     container  'hkubal/clair3:v1.0.6'
 
-    publishDir "${params.outdir}/variants/", mode: 'copy', overwrite: true, pattern: 'merge_output.vcf.gz', saveAs: { filename -> "${meta.ID}_clair3.gvcf.gz" }
+    publishDir "${params.outdir}/variants/", mode: 'copy', overwrite: true, pattern: 'merge_output.gvcf.gz', saveAs: { filename -> "${meta.ID}_clair3.gvcf.gz" }
     publishDir "${params.outdir}/variants/logs/", mode: 'copy', overwrite: true, pattern: 'run_clair3.log', saveAs: { filename -> "${meta.ID}_clair3.log" }
 
     input:
@@ -27,10 +27,13 @@ process CLAIR3_CALL {
     --platform="ont" \
     --model_path="/opt/models/${params.clair3_model}" \
     --output=. \
+    --sample_name=${meta.ID} \
     --bed_fn=${target_regions_bed} \
     --no_phasing_for_fa \
     --include_all_ctgs \
     --haploid_precise \
+    --call_snp_only \
+    --keep_iupac_bases \
     --gvcf
     """
 }
