@@ -8,17 +8,50 @@ import logging
 
 from pathlib import Path
 
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Parses the output of `samtools depth` to determine coverage statistics for each region in a given BED file. Note that this script currently assumes a single reference chromosome."
     )
-    parser.add_argument("--samtools-depth", "-s", type=parse_samtools_depth, required=True, dest="samtools_depth",help="Path to `samtools depth` output file")
-    parser.add_argument("--bed", "-b", type=parse_bed_file, required=True, dest="bed", help=r"Path to BED file (TSV) defining regions (<chrom>\t<start>\t<end>\t<name>)" )
-    parser.add_argument("--threshold", "-t", type=parse_coverage_threshold, required=True, dest="coverage_threshold", help="Comma separated list of coverage thresholds")
-    parser.add_argument("--sample-name", "-n", type=str, required=True, dest="sample_name", help="Sample name")
+    parser.add_argument(
+        "--samtools-depth",
+        "-s",
+        type=parse_samtools_depth,
+        required=True,
+        dest="samtools_depth",
+        help="Path to `samtools depth` output file",
+    )
+    parser.add_argument(
+        "--bed",
+        "-b",
+        type=parse_bed_file,
+        required=True,
+        dest="bed",
+        help=r"Path to BED file (TSV) defining regions (<chrom>\t<start>\t<end>\t<name>)",
+    )
+    parser.add_argument(
+        "--threshold",
+        "-t",
+        type=parse_coverage_threshold,
+        required=True,
+        dest="coverage_thresholds",
+        help="Comma separated list of coverage thresholds",
+    )
+    parser.add_argument(
+        "--sample-name", "-n", type=str, dest="sample_name", help="Sample name"
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        type=Path,
+        dest="output",
+        default=".",
+        help="Path to output directory",
+    )
     parser.set_defaults(feature=False)
 
     return parser.parse_args()
+
 
 def parse_coverage_threshold(coverage_threshold_arg: str) -> list[float]:
     valid_thresholds = []
@@ -26,11 +59,14 @@ def parse_coverage_threshold(coverage_threshold_arg: str) -> list[float]:
     for threshold in coverage_thresholds:
         try:
             valid_threshold = float(threshold)
-        except:
-            logging.error(f"Given threshold '{threshold}' is not a valid threshold value.")
+        except ValueError:
+            logging.error(
+                f"Given threshold '{threshold}' is not a valid threshold value."
+            )
             sys.exit(1)
         valid_thresholds.append(valid_threshold)
     return valid_thresholds
+
 
 def parse_bed_file(path: str) -> pd.DataFrame:
     bed_path = Path(path)
@@ -38,11 +74,14 @@ def parse_bed_file(path: str) -> pd.DataFrame:
         logging.error(f"Given path '{path}' is not a file.")
         sys.exit(1)
     else:
-        df = pd.read_csv(path, header=None, sep='\t')
+        df = pd.read_csv(path, header=None, sep="\t")
     if len(df.columns) != 4:
-        logging.error(f"Given BED file '{bed_path}' is not a valid BED4 file (please ensure the file contains 4 columns).")
+        logging.error(
+            f"Given BED file '{bed_path}' is not a valid BED4 file (please ensure the file contains 4 columns)."
+        )
         sys.exit(1)
     return df
+
 
 def parse_samtools_depth(path: str) -> Path:
     samtools_depth_path = Path(path)
@@ -53,8 +92,18 @@ def parse_samtools_depth(path: str) -> Path:
 
 
 class Region:
-    def __init__(self, genome_depth_per_base: pd.DataFrame, start: int, end: int, name: str, sample: str, coverage_thresholds:list[float] = []):
-        self.region_depth = self._get_region_depth_per_base(genome_depth_per_base, start, end)
+    def __init__(
+        self,
+        genome_depth_per_base: pd.DataFrame,
+        start: int,
+        end: int,
+        name: str,
+        sample: str,
+        coverage_thresholds: list[float] = [],
+    ):
+        self.region_depth = self._get_region_depth_per_base(
+            genome_depth_per_base, start, end
+        )
         self.start = start
         self.end = end
         self.name = name
@@ -65,34 +114,47 @@ class Region:
     def _get_summary_stats(self) -> dict:
         depth_per_base = self.region_depth
         return {
-            "length": len(depth_per_base['Cov']),
-            "missing_sites": sum(depth_per_base['Cov'] == 0),
-            "depth_median": np.median(depth_per_base['Cov']),
-            "depth_mean": np.mean(depth_per_base['Cov']),
-            "depth_min": np.min(depth_per_base['Cov']),
-            "depth_max": np.max(depth_per_base['Cov']),
+            "length": len(depth_per_base["Cov"]),
+            "missing_sites": sum(depth_per_base["Cov"] == 0),
+            "depth_median": np.median(depth_per_base["Cov"]),
+            "depth_mean": np.mean(depth_per_base["Cov"]),
+            "depth_min": np.min(depth_per_base["Cov"]),
+            "depth_max": np.max(depth_per_base["Cov"]),
         }
-    
+
     def get_percent_coverage(self, thresholds: list = []) -> dict:
         if len(thresholds) == 0:
             return {}
         coverage_at_thresholds = {}
         for threshold in thresholds:
-            coverage_at_thresholds[f"cov_perc_{threshold}x"] = self._get_percent_coverage_at_threshold(threshold)
+            coverage_at_thresholds[f"cov_perc_{threshold}x"] = (
+                self._get_percent_coverage_at_threshold(threshold)
+            )
         return coverage_at_thresholds
 
     def _get_percent_coverage_at_threshold(self, threshold: float) -> float:
         """
         Compute percentage of bases covered at given (coverage) threshold
         """
-        return (sum(self.region_depth['Cov'] >= threshold) / len(self.region_depth)) * 100
-    
+        return (
+            sum(self.region_depth["Cov"] >= threshold) / len(self.region_depth)
+        ) * 100
+
     @staticmethod
-    def _get_region_depth_per_base(genome_depth_per_base: pd.DataFrame, start: int, end: int) -> pd.DataFrame:
-        return genome_depth_per_base.loc[(genome_depth_per_base['Pos'] >= int(start)-1) & (genome_depth_per_base['Pos'] <= int(end)-1)]
+    def _get_region_depth_per_base(
+        genome_depth_per_base: pd.DataFrame, start: int, end: int
+    ) -> pd.DataFrame:
+        return genome_depth_per_base.loc[
+            (genome_depth_per_base["Pos"] >= int(start) - 1)
+            & (genome_depth_per_base["Pos"] <= int(end) - 1)
+        ]
 
     def to_dict(self):
-        return {k: v for (k, v) in vars(self).items() if not k.startswith("_") and not callable(v)}
+        return {
+            k: v
+            for (k, v) in vars(self).items()
+            if not k.startswith("_") and not callable(v)
+        }
 
     def to_row(self):
         row = self.to_dict()
@@ -104,17 +166,96 @@ class Region:
         return row
 
 
-def dataframe_from_rows(rows: list[dict], header_override: dict = None, header_order: list = []) -> pd.DataFrame:
+def dataframe_from_rows(
+    rows: list[dict], header_override: dict = None, header_order: list = []
+) -> pd.DataFrame:
     df = pd.DataFrame(rows)
     if header_override is not None:
         df = df.rename(columns=header_override)
     if len(header_order) == 0:
         header_order = sorted(df.columns)
     return df[header_order]
-    
+
+
+def make_output_dir(output: Path) -> None:
+    if not output.is_dir() and output.exists():
+        logging.error(
+            f"Given output {output} exists but is not a directory. Please supply a valid directory path."
+        )
+        sys.exit(1)
+    else:
+        output.mkdir(parents=True, exist_ok=True)
+
+
+def write_output_csv(
+    rows: list[dict],
+    thresholds: list[str],
+    output_dir: Path,
+    output_filename: str = "coverage_summary.tsv",
+    precision: int = 1,
+) -> None:
+    if len(rows) == 0:
+        raise ValueError(
+            "Unexpected number of rows generated from given BED file and samtools depth output."
+        )
+    header = [
+        "sample",
+        "name",
+        "start",
+        "end",
+        "length",
+        "missing_sites",
+        "depth_median",
+        "depth_mean",
+        "depth_min",
+        "depth_max",
+    ]
+    coverage_threshold_headers = [f"cov_perc_{threshold}x" for threshold in thresholds]
+    header.extend(coverage_threshold_headers)
+    dfout = dataframe_from_rows(rows, header_order=header)
+    dfout.to_csv(
+        output_dir / output_filename,
+        sep="\t",
+        index=False,
+        header=True,
+        float_format=f"%.{precision}f",
+    )
+
+
+def process_depth_data(depth_file: Path) -> pd.DataFrame:
+    depth_df = pd.read_csv(
+        depth_file, sep="\t", index_col=0, header=None, names=["Ref", "Pos", "Cov"]
+    )
+    # Anything that isn't covered (is na) make 0
+    depth_df[pd.isnull(depth_df["Cov"])] = 0
+    return depth_df
+
+
+def generate_coverage_summary_rows(
+    depth_df: pd.DataFrame, bed_df: pd.DataFrame, coverage_thresholds: list[float]
+) -> list[dict]:
+    num_regions = len(bed_df.index)
+    if num_regions == 0:
+        raise ValueError("Given dataframe contains no rows and is hence invalid.")
+    rows = []
+    for row_index in range(0, num_regions):
+        region = Region(
+            depth_df,
+            bed_df.iloc[row_index, 1],
+            bed_df.iloc[row_index, 2],
+            bed_df.iloc[row_index, 3],
+            sample_name,
+            coverage_thresholds,
+        )
+        rows.append(region.to_row())
+    return rows
+
 
 if __name__ == "__main__":
     args = parse_args()
+
+    # Make output dir
+    make_output_dir(args.output)
 
     # Get sample name
     if not args.sample_name:
@@ -122,23 +263,16 @@ if __name__ == "__main__":
     else:
         sample_name = args.sample_name
 
-    # Parse depth file
-    mydepth = pd.read_csv(args.samtools_depth, sep='\t', index_col=0, header=None, names=['Ref','Pos','Cov'])
-    # Anything that isn't covered (is na) make 0
-    mydepth[pd.isnull(mydepth['Cov'])] = 0
+    # Process depth file
+    depth_df = process_depth_data(args.samtools_depth)
 
     # Analyse regions defined in bed file
-    bed_file = args.bed
-    rows = []
-    for row_index in range(0, len(bed_file.index)):
-        region = Region(mydepth, bed_file.iloc[row_index, 1], bed_file.iloc[row_index, 2], bed_file.iloc[row_index, 3], sample_name, args.coverage_threshold)
-        rows.append(region.to_row())
+    rows = generate_coverage_summary_rows(depth_df, args.bed, args.coverage_thresholds)
 
     # Output to tsv
-    if rows:
-        header = ["sample", "name", "start", "end", "length", "missing_sites", "depth_median", "depth_mean", "depth_min", "depth_max"]
-        coverage_threshold_headers = [f"cov_perc_{threshold}x" for threshold in args.coverage_threshold]
-        header.extend(coverage_threshold_headers)
-        dfout = dataframe_from_rows(rows, header_order=header)
-        dfout.to_csv(sample_name + ".depth.tsv", sep="\t", index=False, header=True, float_format="%.1f")
-
+    write_output_csv(
+        rows,
+        args.coverage_thresholds,
+        output_dir=args.output,
+        output_filename=f"{sample_name}_coverage_summary.tsv",
+    )
