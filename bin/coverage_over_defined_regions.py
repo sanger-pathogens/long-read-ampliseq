@@ -59,7 +59,7 @@ def parse_args():
 
 ## ARG VALIDATION
 def validate_coverage_threshold(coverage_threshold_arg: str) -> list[float]:
-    valid_thresholds = []
+    valid_thresholds = set()
     coverage_thresholds = coverage_threshold_arg.split(",")
     for threshold in coverage_thresholds:
         try:
@@ -70,8 +70,8 @@ def validate_coverage_threshold(coverage_threshold_arg: str) -> list[float]:
         if valid_threshold < 0:
             logging.error(f"Given coverage threshold '{threshold}' cannot be negative.")
             sys.exit(1)
-        valid_thresholds.append(valid_threshold)
-    return valid_thresholds
+        valid_thresholds.add(valid_threshold)
+    return list(sorted(valid_thresholds))
 
 
 def validate_bed_path(path: str) -> Path:
