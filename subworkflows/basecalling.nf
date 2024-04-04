@@ -233,6 +233,7 @@ workflow SORT_UNCLASSIFIED {
         def unassigned_meta = [:]
         unassigned_meta.barcode_kit = "Multiple"
         unassigned_meta.barcode = "Unassigned"
+        unassigned_meta.ID = "Unassigned_reads"
         tuple( unassigned_meta, long_bam, sequencing_summary)
     }
     | set{ unassigned_marked }
