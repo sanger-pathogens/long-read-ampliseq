@@ -49,6 +49,7 @@ workflow POST_MAP_QC {
 
     SAMTOOLS_STATS(
         sorted_reads_bam
+    )
 
     COUNT_ON_AND_OFF_TARGET_READS(
         on_target_reads_bam.join(off_target_reads_bam)

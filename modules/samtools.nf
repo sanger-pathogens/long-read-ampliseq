@@ -164,7 +164,7 @@ process COUNT_ON_AND_OFF_TARGET_READS {
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
 
     input:
-    tuple val(meta), path(on_target_reads_bam), path(off_target_reads_bam)
+    tuple val(meta), path(on_target_reads_bam), path(on_target_reads_bai), path(off_target_reads_bam)
 
     output:
     tuple val(meta), path("*_target_count.txt"),  emit: on_and_off_target_counts

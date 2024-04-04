@@ -5,11 +5,11 @@ include { CURATE_CONSENSUS } from '../assorted-sub-workflows/strain_mapper/modul
 
 workflow CALL_VARIANTS {
     take:
-    sorted_reads_bam_with_bed
+    filtered_reads_bam_with_bed
     reference_index_ch
 
     main:
-    sorted_reads_bam_with_bed.combine(reference_index_ch)
+    filtered_reads_bam_with_bed.combine(reference_index_ch)
     | CLAIR3_CALL
 
     GUNZIP( CLAIR3_CALL.out.vcf_out )
