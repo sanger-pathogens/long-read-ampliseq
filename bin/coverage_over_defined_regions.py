@@ -16,29 +16,33 @@ def parse_args():
     parser.add_argument(
         "--samtools-depth",
         "-s",
-        type=parse_samtools_depth,
+        type=validate_samtools_depth,
         required=True,
         dest="samtools_depth",
-        help="Path to `samtools depth` output file",
+        help="path to `samtools depth` output file",
     )
     parser.add_argument(
         "--bed",
         "-b",
-        type=parse_bed_file,
+        type=validate_bed_path,
         required=True,
         dest="bed",
-        help=r"Path to BED file (TSV) defining regions (<chrom>\t<start>\t<end>\t<name>)",
+        help=r"path to BED file (TSV) defining regions. If BED3 format (<chrom>\t<start>\t<end>), arbitrary region names will be generated. If BED4 format (<chrom>\t<start>\t<end>\t<name>), the region names will be used if present and arbitrary names will be used for any missing names.",
     )
     parser.add_argument(
         "--threshold",
         "-t",
-        type=parse_coverage_threshold,
+        type=validate_coverage_threshold,
         required=True,
         dest="coverage_thresholds",
-        help="Comma separated list of coverage thresholds",
+        help="comma separated list of coverage thresholds",
     )
     parser.add_argument(
-        "--sample-name", "-n", type=str, dest="sample_name", help="Sample name"
+        "--sample-name",
+        "-n",
+        type=str,
+        dest="sample_name",
+        help="sample name to conveniently link sample name as metadata in coverage summary",
     )
     parser.add_argument(
         "--output",
@@ -46,49 +50,117 @@ def parse_args():
         type=Path,
         dest="output",
         default=".",
-        help="Path to output directory",
+        help="path to output directory",
     )
     parser.set_defaults(feature=False)
 
     return parser.parse_args()
 
 
-def parse_coverage_threshold(coverage_threshold_arg: str) -> list[float]:
+## ARG VALIDATION
+def validate_coverage_threshold(coverage_threshold_arg: str) -> list[float]:
     valid_thresholds = []
     coverage_thresholds = coverage_threshold_arg.split(",")
     for threshold in coverage_thresholds:
         try:
             valid_threshold = float(threshold)
         except ValueError:
-            logging.error(
-                f"Given threshold '{threshold}' is not a valid threshold value."
-            )
+            logging.error(f"Given coverage threshold '{threshold}' is not a valid.")
+            sys.exit(1)
+        if valid_threshold < 0:
+            logging.error(f"Given coverage threshold '{threshold}' cannot be negative.")
             sys.exit(1)
         valid_thresholds.append(valid_threshold)
     return valid_thresholds
 
 
-def parse_bed_file(path: str) -> pd.DataFrame:
+def validate_bed_path(path: str) -> Path:
     bed_path = Path(path)
     if not bed_path.is_file():
         logging.error(f"Given path '{path}' is not a file.")
         sys.exit(1)
-    else:
-        df = pd.read_csv(path, header=None, sep="\t")
-    if len(df.columns) != 4:
-        logging.error(
-            f"Given BED file '{bed_path}' is not a valid BED4 file (please ensure the file contains 4 columns)."
-        )
-        sys.exit(1)
-    return df
+    return bed_path
 
 
-def parse_samtools_depth(path: str) -> Path:
+def validate_samtools_depth(path: str) -> Path:
     samtools_depth_path = Path(path)
     if not samtools_depth_path.is_file():
         logging.error(f"Given samtools depth output file '{path}' is not a valid file.")
         sys.exit(1)
     return samtools_depth_path
+
+
+## PARSING
+def parse_depth_data(depth_file: Path) -> pd.DataFrame:
+    depth_df = pd.read_csv(
+        depth_file, sep="\t", index_col=0, header=None, names=["Ref", "Pos", "Cov"]
+    )
+    # Anything that isn't covered (is na) make 0
+    depth_df[pd.isnull(depth_df["Cov"])] = 0
+    return depth_df
+
+
+def parse_bed_file(path: Path) -> pd.DataFrame:
+    df = pd.read_csv(path, header=None, sep="\t")
+    if len(df.columns) < 3:
+        logging.error(
+            f"Given BED file '{path}' has fewer than 3 columns (please ensure the file has the correct format)."
+        )
+        sys.exit(1)
+    if len(df.columns) >= 4:
+        region_names = df.iloc[:, 3]
+        duplicate_region_names = region_names.dropna().duplicated()
+        if duplicate_region_names.any():
+            logging.error(
+                f"Given BED file '{path}' has duplicate region names in the 4th column (please ensure region names are unique)."
+            )
+            sys.exit(1)
+    if df.iloc[:, 0:3].isna().values.any():
+        logging.error(
+            f"Given BED file '{path}' has missing values in one of the first 3 columns (please ensure these columns do not have missing values)."
+        )
+        sys.exit(1)
+    integer_columns = (1, 2)
+    col_type_error = False
+    for column in integer_columns:
+        if not df.iloc[:, column].dtypes == "int64":
+            col_type_error = True
+            logging.error(
+                f"Given BED file '{path}' has non-integer values in column {column + 1}."
+            )
+        if (df.iloc[:, column] < 0).any():
+            logging.error(
+                f"Given BED file '{path}' has negative values in column {column + 1}. Please ensure this column contains only non-negative integers."
+            )
+    if col_type_error:
+        sys.exit(1)
+    df = fill_in_missing_region_names(df)
+    return df
+
+
+def fill_in_missing_region_names(bed_df: pd.DataFrame) -> pd.DataFrame:
+    bed_df_copy = bed_df.copy()
+    start = bed_df_copy.iloc[:, 1]
+    end = bed_df_copy.iloc[:, 2]
+    generated_region_names = "locus_" + start.astype(str) + "_" + end.astype(str)
+    if len(bed_df_copy.columns) > 3:
+        region_names = bed_df_copy.iloc[:, 3]
+        missing_region_name_index = bed_df_copy.iloc[:, 3].isna()
+        if missing_region_name_index.any():
+            replacement_names = generated_region_names[missing_region_name_index]
+            bed_df_copy.iloc[missing_region_name_index, 3] = replacement_names
+    elif len(bed_df_copy.columns) == 3:
+        bed_df_copy[3] = generated_region_names
+    else:
+        raise ValueError("Unexpected number of columns in given BED file")
+    region_names = bed_df_copy[3]
+    duplicated_region_names = region_names[region_names.duplicated()]
+    if duplicated_region_names.any():
+        logging.error(
+            f"Generated duplicate region names from BED file: {list(duplicated_region_names)}. This could indicate that there are multiple regions in the bed file with the same coordinates."
+        )
+        sys.exit(1)
+    return bed_df_copy
 
 
 class Region:
@@ -166,6 +238,27 @@ class Region:
         return row
 
 
+## OUTPUT
+def generate_coverage_summary_rows(
+    depth_df: pd.DataFrame, bed_df: pd.DataFrame, coverage_thresholds: list[float]
+) -> list[dict]:
+    num_regions = len(bed_df.index)
+    if num_regions == 0:
+        raise ValueError("Given dataframe contains no rows and is hence invalid.")
+    rows = []
+    for row_index in range(0, num_regions):
+        region = Region(
+            depth_df,
+            bed_df.iloc[row_index, 1],
+            bed_df.iloc[row_index, 2],
+            bed_df.iloc[row_index, 3],
+            sample_name,
+            coverage_thresholds,
+        )
+        rows.append(region.to_row())
+    return rows
+
+
 def dataframe_from_rows(
     rows: list[dict], header_override: dict = None, header_order: list = []
 ) -> pd.DataFrame:
@@ -222,35 +315,6 @@ def write_output_csv(
     )
 
 
-def process_depth_data(depth_file: Path) -> pd.DataFrame:
-    depth_df = pd.read_csv(
-        depth_file, sep="\t", index_col=0, header=None, names=["Ref", "Pos", "Cov"]
-    )
-    # Anything that isn't covered (is na) make 0
-    depth_df[pd.isnull(depth_df["Cov"])] = 0
-    return depth_df
-
-
-def generate_coverage_summary_rows(
-    depth_df: pd.DataFrame, bed_df: pd.DataFrame, coverage_thresholds: list[float]
-) -> list[dict]:
-    num_regions = len(bed_df.index)
-    if num_regions == 0:
-        raise ValueError("Given dataframe contains no rows and is hence invalid.")
-    rows = []
-    for row_index in range(0, num_regions):
-        region = Region(
-            depth_df,
-            bed_df.iloc[row_index, 1],
-            bed_df.iloc[row_index, 2],
-            bed_df.iloc[row_index, 3],
-            sample_name,
-            coverage_thresholds,
-        )
-        rows.append(region.to_row())
-    return rows
-
-
 if __name__ == "__main__":
     args = parse_args()
 
@@ -263,11 +327,14 @@ if __name__ == "__main__":
     else:
         sample_name = args.sample_name
 
-    # Process depth file
-    depth_df = process_depth_data(args.samtools_depth)
+    # Parse depth file
+    depth_df = parse_depth_data(args.samtools_depth)
+
+    # Parse bed file
+    bed_df = parse_bed_file(args.bed)
 
     # Analyse regions defined in bed file
-    rows = generate_coverage_summary_rows(depth_df, args.bed, args.coverage_thresholds)
+    rows = generate_coverage_summary_rows(depth_df, bed_df, args.coverage_thresholds)
 
     # Output to tsv
     write_output_csv(
