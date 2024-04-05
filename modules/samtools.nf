@@ -74,6 +74,7 @@ process CONVERT_TO_BAM {
     tag "${meta.ID}"
     label 'cpu_2'
     label 'mem_1'
+    label 'time_30m'
     
     conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
@@ -119,6 +120,61 @@ process SAMTOOLS_SORT {
         -@ ${task.cpus} \
         -o ${sorted_reads} \
         ${mapped_reads_bam}
+    """
+}
+
+process REMOVE_OFF_TARGET_READS {
+    tag "${meta.ID}"
+    label 'cpu_2'
+    label 'mem_1'
+    label 'time_30m'
+
+    conda 'bioconda::samtools=1.19'
+    container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
+
+    input:
+    tuple val(meta), path(sorted_reads_bam), path(sorted_reads_bai), path(target_regions_bed)
+
+    output:
+    tuple val(meta), path("${on_target_reads_bam}"),  emit: on_target_reads_bam
+    tuple val(meta), path("${off_target_reads_bam}"),  emit: off_target_reads_bam
+
+    script:
+    on_target_reads_bam = "${meta.ID}_on_target.bam"
+    off_target_reads_bam = "${meta.ID}_off_target.bam"
+    """
+    samtools view \
+        -@ ${task.cpus} \
+        -L ${target_regions_bed} \
+        -o ${on_target_reads_bam} \
+        -U ${off_target_reads_bam} \
+        ${sorted_reads_bam}
+    """
+}
+
+process COUNT_ON_AND_OFF_TARGET_READS {
+    tag "${meta.ID}"
+    label 'cpu_2'
+    label 'mem_1'
+    label 'time_30m'
+
+    publishDir "${params.outdir}/qc/bam_filtering", mode: 'copy', overwrite: true
+
+    conda 'bioconda::samtools=1.19'
+    container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
+
+    input:
+    tuple val(meta), path(on_target_reads_bam), path(on_target_reads_bai), path(off_target_reads_bam)
+
+    output:
+    tuple val(meta), path("*_target_count.txt"),  emit: on_and_off_target_counts
+
+    script:
+    on_target_reads_count = "${meta.ID}_on_target_count.txt"
+    off_target_reads_count = "${meta.ID}_off_target_count.txt"
+    """
+    samtools view -c ${on_target_reads_bam} -o ${on_target_reads_count}
+    samtools view -c ${off_target_reads_bam} -o ${off_target_reads_count}
     """
 }
 

@@ -1,7 +1,8 @@
 include {
     GET_READLENGTH_DISTRIBUTION;
     SAMTOOLS_DEPTH;
-    SAMTOOLS_STATS    
+    SAMTOOLS_STATS;
+    COUNT_ON_AND_OFF_TARGET_READS
 } from '../modules/samtools.nf'
 include {
     BEDTOOLS_GENOMECOV;
@@ -12,6 +13,8 @@ include { PYTHON_COVERAGE_OVER_DEFINED_REGIONS } from '../modules/custom.nf'
 workflow POST_MAP_QC {
     take:
     sorted_reads_bam
+    on_target_reads_bam
+    off_target_reads_bam
     target_regions_bed
 
     main:
@@ -46,5 +49,9 @@ workflow POST_MAP_QC {
 
     SAMTOOLS_STATS(
         sorted_reads_bam
+    )
+
+    COUNT_ON_AND_OFF_TARGET_READS(
+        on_target_reads_bam.join(off_target_reads_bam)
     )
 }
