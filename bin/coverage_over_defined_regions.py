@@ -283,10 +283,6 @@ def write_output_csv(
     output_filename: str = "coverage_summary.tsv",
     precision: int = 1,
 ) -> None:
-    if len(rows) == 0:
-        raise ValueError(
-            "Unexpected number of rows generated from given BED file and samtools depth output."
-        )
     header = [
         "sample",
         "name",
