@@ -193,8 +193,8 @@ class Region:
             "depth_max": np.max(depth_per_base["Cov"]),
         }
 
-    def get_percent_coverage(self, thresholds: list = []) -> dict:
-        if len(thresholds) == 0:
+    def get_percent_coverage(self, thresholds: list = None) -> dict:
+        if thresholds is None or len(thresholds) == 0:
             return {}
         coverage_at_thresholds = {}
         for threshold in thresholds:
@@ -256,12 +256,12 @@ def generate_coverage_summary_rows(
 
 
 def dataframe_from_rows(
-    rows: list[dict], header_override: dict = None, header_order: list = []
+    rows: list[dict], header_override: dict = None, header_order: list = None
 ) -> pd.DataFrame:
     df = pd.DataFrame(rows)
     if header_override is not None:
         df = df.rename(columns=header_override)
-    if len(header_order) == 0:
+    if header_order is None or len(header_order) == 0:
         header_order = sorted(df.columns)
     return df[header_order]
 
