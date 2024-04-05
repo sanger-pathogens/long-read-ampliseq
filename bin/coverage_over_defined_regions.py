@@ -52,7 +52,6 @@ def parse_args():
         default=".",
         help="path to output directory",
     )
-    parser.set_defaults(feature=False)
 
     return parser.parse_args()
 
