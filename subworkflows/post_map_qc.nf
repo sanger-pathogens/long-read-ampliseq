@@ -38,8 +38,7 @@ workflow POST_MAP_QC {
         sorted_reads_bam
     )
 
-    sorted_reads_bam
-        .join(SAMTOOLS_DEPTH.out.samtools_coverage)
+    SAMTOOLS_DEPTH.out.samtools_coverage
         .combine(target_regions_bed)
         .set { coverage_over_defined_regions_input }
 
