@@ -75,19 +75,19 @@ def validate_coverage_threshold(coverage_threshold_arg: str) -> list[float]:
 
 
 def validate_bed_path(path: str) -> Path:
-    bed_path = Path(path)
-    if not bed_path.is_file():
-        logging.error(f"Given path '{path}' is not a file.")
-        sys.exit(1)
-    return bed_path
+    return validate_file_exists(path, f"Given bed file '{path}' is not a valid file.")
 
 
 def validate_samtools_depth(path: str) -> Path:
-    samtools_depth_path = Path(path)
-    if not samtools_depth_path.is_file():
-        logging.error(f"Given samtools depth output file '{path}' is not a valid file.")
+    return validate_file_exists(path, f"Given samtools depth output file '{path}' is not a valid file.")
+
+
+def validate_file_exists(path: str, message: str):
+    file_path = Path(path)
+    if not file_path.is_file():
+        logging.error(message)
         sys.exit(1)
-    return samtools_depth_path
+    return file_path
 
 
 ## PARSING
