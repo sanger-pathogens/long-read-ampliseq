@@ -242,11 +242,8 @@ class Region:
 def generate_coverage_summary_rows(
     depth_df: pd.DataFrame, bed_df: pd.DataFrame, coverage_thresholds: list[float]
 ) -> list[dict]:
-    num_regions = len(bed_df.index)
-    if num_regions == 0:
-        raise ValueError("Given dataframe contains no rows and is hence invalid.")
     rows = []
-    for row_index in range(0, num_regions):
+    for row_index in range(0, len(bed_df.index)):
         region = Region(
             depth_df,
             bed_df.iloc[row_index, 1],
