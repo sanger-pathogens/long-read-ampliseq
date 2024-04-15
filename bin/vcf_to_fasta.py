@@ -46,20 +46,6 @@ def argparser():
     parser.add_argument("-g", "--gap_character", default= 'N', help="character to use for between amplicon gaps default - leave blank to only include variants (bit useless)")
     return parser
 
-def calculate_reference_lengths(reference_file):
-    """
-    caculate the length of the reference
-
-    reference file (file): reference to be caculated
-
-    returns
-    ordered dict of reference lengths
-    """
-    reference_lengths = OrderedDict()
-    for record in SeqIO.parse(reference_file, format = 'fasta'):
-        reference_lengths[record.id] = len(record.seq)
-    return reference_lengths
-
 def get_variant_info(vcf_file):
     """
     extracts variants from vcf file
@@ -130,7 +116,7 @@ def calculate_gaps_to_add(gap_start_position, gap_end_position, gapcharacter):
     return [gapcharacter] * (gap_end_position - gap_start_position)
 
 def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, variant_info, replace_reference, gap_character):
-     """
+    """
     Generate background reference (or gaps) for loci in a bed file replacing reference with variants where they are found
 
     Parameters:
@@ -210,7 +196,6 @@ if __name__ == '__main__':
     parser = argparser()
     args = parser.parse_args()
 
-    reference_lengths = calculate_reference_lengths(args.reference_file)
     variants = get_variant_info(args.filtered_vcf_file)
 
     extracted_sequences = extract_sequences_from_bed_and_include_variants(args.reference_file, args.bed_file, variants, args.replace_reference, args.gap_character)
