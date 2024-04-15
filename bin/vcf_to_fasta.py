@@ -47,12 +47,28 @@ def argparser():
     return parser
 
 def calculate_reference_lengths(reference_file):
+    """
+    caculate the length of the reference
+
+    reference file (file): reference to be caculated
+
+    returns
+    ordered dict of reference lengths
+    """
     reference_lengths = OrderedDict()
     for record in SeqIO.parse(reference_file, format = 'fasta'):
         reference_lengths[record.id] = len(record.seq)
     return reference_lengths
 
 def get_variant_info(vcf_file):
+    """
+    extracts variants from vcf file
+
+    vcf file (file): vcf file to extract variants from
+
+    returns
+    returns a ordereddict of variants from the input vcf
+    """
     variant_info = OrderedDict()
     with VariantFile(vcf_file) as vcf:
         for record in vcf:
@@ -64,6 +80,15 @@ def get_variant_info(vcf_file):
     return variant_info
 
 def variants_in_range(bed_range, variants):
+    """
+    script to check if any variants fall in the bed region
+
+    bed range (range): range of loci from the bed file
+    variants (dict): base change and location of variant
+
+    returns
+    variants list (list): list of variants in the bed region
+    """
     variants_list = []
     for key, value in variants.items():
         if key in bed_range:
@@ -96,9 +121,28 @@ def change_base_with_checks(sequence, position, base_change):
     return new_sequence
 
 def calculate_gaps_to_add(gap_start_position, gap_end_position, gapcharacter):
+    """
+    takes a start and end position and creates a gap that length with a character of your choosing
+
+    returns
+    a string of gap characters n long depending on input
+    """
     return [gapcharacter] * (gap_end_position - gap_start_position)
 
 def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, variant_info, replace_reference, gap_character):
+     """
+    Generate background reference (or gaps) for loci in a bed file replacing reference with variants where they are found
+
+    Parameters:
+    Reference (file): The Reference biological sequence (e.g., DNA or RNA).
+    Bedfile (file): The positions of the loci's for the above reference
+    variant info (file): A VCF file containing variant calls for your chosen sample against the reference
+    replace_reference (str): A binary yes no if the reference should be replaced with gap characters
+    gap_character (str): A character to replace the reference with (normally N)
+
+    Returns:
+    list: A list of Seq objects that are reflective of the loci from the reference with variant bases overwritten with their variants as called in the vcf
+    """
     #Reference genome as seqrecord
     ref_dict = SeqIO.to_dict(SeqIO.parse(reference_file, "fasta"))
     
@@ -135,6 +179,17 @@ def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, va
     return extracted_sequences
 
 def write_sequence(filepath, multifasta, fasta_id, sequence_list):
+    """
+    Write sequences to file
+
+    filepath (path): path to write to
+    multifasta (bool): multifasta or not
+    fasta id (str): ID for the fasta header
+    sequence list (list): A list of SEQ records to be written to file either as a single fasta or multifasta
+
+    returns
+    writes files returns nothing
+    """
     if multifasta:
         counter = 1
         with open(filepath, 'w') as output:
