@@ -143,16 +143,16 @@ def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, va
         end = row['end']
 
         if replace_reference:
-                gaps = calculate_gaps_to_add(start, end, gap_character)
-                sequence = Seq("".join(gaps))
+            gaps = calculate_gaps_to_add(start, end, gap_character)
+            sequence = Seq("".join(gaps))
         else:
-                sequence = ref_dict[chromosome].seq[start:end]
+            sequence = ref_dict[chromosome].seq[start:end]
         
         variants = variants_in_range(range(start, end), variant_info)
-        if variants:
-            for variant in variants:
-                adjusted_start = variant[0] - start-1 #adjust to VCF not starting at 1
-                sequence = change_base_with_checks(sequence, adjusted_start, variant[1])
+        
+        for variant in variants:
+            adjusted_start = variant[0] - start-1 #adjust to VCF not starting at 1
+            sequence = change_base_with_checks(sequence, adjusted_start, variant[1])
 
         sequence_record = SeqRecord(sequence, id=f"{chromosome}_{start}_{end}", description="")
         extracted_sequences.append(sequence_record)
