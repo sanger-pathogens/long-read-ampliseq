@@ -7,8 +7,6 @@ from collections import OrderedDict
 import argparse, sys, os
 import pandas as pd
 
-#base script taken from nf-core bactmap and adjusted for long-read-ampliseq pipeline
-
 class ParserWithErrors(argparse.ArgumentParser):
     def error(self, message):
         print('{0}\n\n'.format(message))
@@ -38,11 +36,11 @@ def argparser():
     parser.add_argument("-i", "--fasta_id",
                     default="auto", help="fasta header ID")
     parser.add_argument("-m", "--multifasta",
-                    default=False, help="multifasta output")
+                    action="store_true", help="multifasta output")
     parser.add_argument("-b", "--bed_file", type=lambda x: parser.is_valid_file(parser, x), required=True,
                         help="BED file (TSV) defining regions (<name>\t<start>\t<end>)" )
     parser.add_argument("-rr", "--replace_reference",
-                    default=False, help="replace reference with gap")
+                    action="store_true", help="replace reference with gap")
     parser.add_argument("-g", "--gap_character", default= 'N', help="character to use for between amplicon gaps default - leave blank to only include variants (bit useless)")
     return parser
 
@@ -96,7 +94,7 @@ def change_base_with_checks(sequence, position, base_change):
     old_base, new_base = base_change
     if position < 0 or position >= len(sequence):
         raise ValueError(f"Position {position} is out of range: {len(sequence)}")
-    if old_base != sequence[position] and sequence[position] != "N":
+    if old_base != sequence[position].upper() and sequence[position].upper() != "N":
         raise ValueError(f"{sequence[position-5:position+6]} center base was expected to be {old_base}")
     if new_base not in 'ACGTUacgtu':
         raise ValueError("Variant not an accepted base.")
@@ -146,7 +144,7 @@ def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, va
             gaps = calculate_gaps_to_add(start, end, gap_character)
             sequence = Seq("".join(gaps))
         else:
-            sequence = ref_dict[chromosome].seq[start:end]
+            sequence = ref_dict[chromosome].seq[start:end].lower()
         
         variants = variants_in_range(range(start, end), variant_info)
         
