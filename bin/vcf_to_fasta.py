@@ -37,6 +37,8 @@ def argparser():
                     default="auto", help="fasta header ID")
     parser.add_argument("-m", "--multifasta",
                     action="store_true", help="multifasta output")
+    parser.add_argument("-s", "--singlefasta",
+                    action="store_true", help="single fasta output per locus")
     parser.add_argument("-b", "--bed_file", type=lambda x: parser.is_valid_file(parser, x), required=True,
                         help="BED file (TSV) defining regions (<name>\t<start>\t<end>)" )
     parser.add_argument("-rr", "--replace_reference",
@@ -157,7 +159,7 @@ def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, va
     
     return extracted_sequences
 
-def write_sequence(filepath, multifasta, fasta_id, sequence_list):
+def write_sequence(filepath, multifasta, singlefasta, fasta_id, sequence_list):
     """
     Write sequences to file
 
@@ -170,19 +172,23 @@ def write_sequence(filepath, multifasta, fasta_id, sequence_list):
     writes files returns nothing
     """
     if multifasta:
-        counter = 1
         with open(filepath, 'w') as output:
-            for sequence in sequence_list:
-                record = SeqRecord(Seq(sequence.seq), id = f"{fasta_id}_{counter}", description = '')
+            for i, sequence in enumerate(sequence_list, start=1):
+                record = SeqRecord(Seq(sequence.seq), id = f"{fasta_id}_{i}", description = '')
                 SeqIO.write(record, output, "fasta")
                 counter +=1
     else:
+        sequences = [str(sequence.seq) for sequence in sequence_list]
+        master_record = "".join(sequences)
         with open(filepath, 'w') as output:
-            master_record = ""
-            for sequence in sequence_list:
-                master_record += str(sequence.seq)
             record = SeqRecord(Seq(master_record), id = f"{fasta_id}_multi_locus", description = 'joined ref bed file regions with variants') 
             SeqIO.write(record, output, "fasta")
+            
+    if singlefasta:
+        for sequence in sequence_list:
+            with open(f"{sequence.id}.fasta", 'w') as output:
+                    record = SeqRecord(Seq(sequence.seq), id = sequence.id, description = '')
+                    SeqIO.write(record, output, "fasta")
                 
 
 if __name__ == '__main__':
@@ -198,4 +204,4 @@ if __name__ == '__main__':
     else:
         fasta_id = args.fasta_id
 
-    write_sequence(args.output_fasta_file, args.multifasta, fasta_id, extracted_sequences)
+    write_sequence(args.output_fasta_file, args.multifasta, args.singlefasta, fasta_id, extracted_sequences)
