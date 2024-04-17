@@ -22,7 +22,7 @@ class ParserWithErrors(argparse.ArgumentParser):
 
 def argparser():
     description = """
-    A script to parse a filtered VCF and
+    Tool to plot variants onto a reference region as described by a bedfile
     """
     parser = ParserWithErrors(description = description)
     parser.add_argument("-r", "--reference_file", required=True,
@@ -31,7 +31,7 @@ def argparser():
     parser.add_argument("-v", "--filtered_vcf_file", required=True,
                         help="filtered bcf file path",
                         type=lambda x: parser.is_valid_file(parser, x))
-    parser.add_argument("-o", "--output_fasta_file", required=True,
+    parser.add_argument("-o", "--output_fasta_file_prefix", required=True,
                     help="file path to output fasta file")
     parser.add_argument("-i", "--fasta_id",
                     default="auto", help="fasta header ID")
@@ -39,6 +39,8 @@ def argparser():
                     action="store_true", help="multifasta output")
     parser.add_argument("-s", "--singlefasta",
                     action="store_true", help="single fasta output per locus")
+    parser.add_argument("-ml", "--multi_locus",
+                    action="store_true", help="multi locus concatinated fasta")
     parser.add_argument("-b", "--bed_file", type=lambda x: parser.is_valid_file(parser, x), required=True,
                         help="BED file (TSV) defining regions (<name>\t<start>\t<end>)" )
     parser.add_argument("-rr", "--replace_reference",
@@ -154,12 +156,12 @@ def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, va
             adjusted_start = variant[0] - start-1 #adjust to VCF not starting at 1
             sequence = change_base_with_checks(sequence, adjusted_start, variant[1])
 
-        sequence_record = SeqRecord(sequence, id=f"{chromosome}_{start}_{end}", description="")
+        sequence_record = SeqRecord(sequence, id=f"{chromosome}_{start}_{end}", description=f"{start}_{end}")
         extracted_sequences.append(sequence_record)
     
     return extracted_sequences
 
-def write_sequence(filepath, multifasta, singlefasta, fasta_id, sequence_list):
+def write_sequence(filepath, multi_locus, multifasta, singlefasta, fasta_id, sequence_list):
     """
     Write sequences to file
 
@@ -172,21 +174,23 @@ def write_sequence(filepath, multifasta, singlefasta, fasta_id, sequence_list):
     writes files returns nothing
     """
     if multifasta:
-        with open(filepath, 'w') as output:
+        with open(f"{filepath}.fasta", 'w') as output:
             for i, sequence in enumerate(sequence_list, start=1):
                 record = SeqRecord(Seq(sequence.seq), id = f"{fasta_id}_{i}", description = '')
                 SeqIO.write(record, output, "fasta")
                 counter +=1
-    else:
+    if multi_locus:
         sequences = [str(sequence.seq) for sequence in sequence_list]
         master_record = "".join(sequences)
-        with open(filepath, 'w') as output:
+        with open(f"{filepath}_multi_locus.fasta", 'w') as output:
             record = SeqRecord(Seq(master_record), id = f"{fasta_id}_multi_locus", description = 'joined ref bed file regions with variants') 
-            SeqIO.write(record, output, "fasta")
-            
+            SeqIO.write(record, output, "fasta")        
+    
     if singlefasta:
         for sequence in sequence_list:
-            with open(f"{sequence.id}.fasta", 'w') as output:
+            start, end = sequence.description.split("_")
+            final_name = f"{fasta_id}_{start}_{end}"
+            with open(f"{final_name}.fa", 'w') as output:
                     record = SeqRecord(Seq(sequence.seq), id = sequence.id, description = '')
                     SeqIO.write(record, output, "fasta")
                 
@@ -204,4 +208,4 @@ if __name__ == '__main__':
     else:
         fasta_id = args.fasta_id
 
-    write_sequence(args.output_fasta_file, args.multifasta, args.singlefasta, fasta_id, extracted_sequences)
+    write_sequence(args.output_fasta_file, args.multi_locus, args.multifasta, args.singlefasta, fasta_id, extracted_sequences)
