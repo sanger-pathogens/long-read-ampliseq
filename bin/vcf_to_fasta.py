@@ -40,7 +40,7 @@ def argparser():
     parser.add_argument("-s", "--singlefasta",
                     action="store_true", help="single fasta output per locus")
     parser.add_argument("-ml", "--multi_locus",
-                    action="store_true", help="multi locus concatinated fasta")
+                    action="store_true", help="multi locus concatenated fasta")
     parser.add_argument("-b", "--bed_file", type=lambda x: parser.is_valid_file(parser, x), required=True,
                         help="BED file (TSV) defining regions (<name>\t<start>\t<end>)" )
     parser.add_argument("-rr", "--replace_reference",
