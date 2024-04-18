@@ -15,7 +15,7 @@ class ParserWithErrors(argparse.ArgumentParser):
 
     def is_valid_file(self, parser, arg):
         if not os.path.isfile(arg):
-            parser.error("The file %s does not exist!" % arg)
+            parser.error(f"The file {arg} does not exist!")
         else:
             return arg
 
