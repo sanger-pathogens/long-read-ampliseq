@@ -18,6 +18,10 @@ workflow CALL_VARIANTS {
     CURATE_CONSENSUS.out.full_consensus.collectFile { meta, file -> [ "merged.fasta", file ] }
     | CONSTRUCT_PHYLO
 
+    //CURATE_CONSENSUS.out.per_loci.flatten().map{ loci_fasta -> 
+    //    
+    //}
+
     emit:
     CLAIR3_CALL.out.clair3_out
 }
