@@ -9,13 +9,13 @@ import pandas as pd
 
 class ParserWithErrors(argparse.ArgumentParser):
     def error(self, message):
-        print('{0}\n\n'.format(message))
+        print(f"{message}\n\n")
         self.print_help()
         sys.exit(2)
 
     def is_valid_file(self, parser, arg):
         if not os.path.isfile(arg):
-            parser.error("The file %s does not exist!" % arg)
+            parser.error(f"The file {arg} does not exist!")
         else:
             return arg
 
@@ -29,9 +29,9 @@ def argparser():
                         help="reference fasta file path",
                         type=lambda x: parser.is_valid_file(parser, x))
     parser.add_argument("-v", "--filtered_vcf_file", required=True,
-                        help="filtered bcf file path",
+                        help="filtered vcf file path",
                         type=lambda x: parser.is_valid_file(parser, x))
-    parser.add_argument("-o", "--output_fasta_file_prefix", required=True,
+    parser.add_argument("-o", "--output_fasta_file", required=True,
                     help="file path to output fasta file")
     parser.add_argument("-i", "--fasta_id",
                     default="auto", help="fasta header ID")
@@ -40,7 +40,7 @@ def argparser():
     parser.add_argument("-s", "--singlefasta",
                     action="store_true", help="single fasta output per locus")
     parser.add_argument("-ml", "--multi_locus",
-                    action="store_true", help="multi locus concatinated fasta")
+                    action="store_true", help="multi locus concatenated fasta")
     parser.add_argument("-b", "--bed_file", type=lambda x: parser.is_valid_file(parser, x), required=True,
                         help="BED file (TSV) defining regions (<name>\t<start>\t<end>)" )
     parser.add_argument("-rr", "--replace_reference",
