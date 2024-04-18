@@ -29,7 +29,7 @@ def argparser():
                         help="reference fasta file path",
                         type=lambda x: parser.is_valid_file(parser, x))
     parser.add_argument("-v", "--filtered_vcf_file", required=True,
-                        help="filtered bcf file path",
+                        help="filtered vcf file path",
                         type=lambda x: parser.is_valid_file(parser, x))
     parser.add_argument("-o", "--output_fasta_file_prefix", required=True,
                     help="file path to output fasta file")
