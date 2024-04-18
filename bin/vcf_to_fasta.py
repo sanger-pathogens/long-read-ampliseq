@@ -9,7 +9,7 @@ import pandas as pd
 
 class ParserWithErrors(argparse.ArgumentParser):
     def error(self, message):
-        print('{0}\n\n'.format(message))
+        print(f"{message}\n\n")
         self.print_help()
         sys.exit(2)
 
