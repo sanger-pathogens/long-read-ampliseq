@@ -33,6 +33,34 @@ nextflow run long-read-ampliseq/main.nf \
 --additional_metadata <CSV of additional metadata>
 ```
 
+##### Other parameters:
+
+###### Basecalling
+- --basecall = "true"
+- --basecall_model = "dna_r9.4.1_e8_hac@v3.3"
+- --trim_adapters = "all"
+- --barcode_kit_name = ["EXP-NBD104", "EXP-NBD114"]
+- --read_format = "fastq"
+
+###### Saving output files
+- --keep_sorted_bam = true
+- --save_fastqs = true
+- --save_trimmed = true
+- --save_too_short = true
+- --save_too_long = true
+
+###### QC
+- --qc_reads = true
+- --min_qscore = 9
+- --cutadapt_args = "-e 0.15 --no-indels --overlap 18"
+- --lower_read_length_cutoff = 450
+- --upper_read_length_cutoff = 800
+- --coverage_reporting_thresholds = "1,2,8,10,25,30,40,50,100"
+- --coverage_filtering_threshold = "25"
+
+###### Variant calling
+- --clair3_model = "r941_prom_hac_g360+g422"
+
 ## Support
 Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
 
