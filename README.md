@@ -1,6 +1,5 @@
 # Long read AmpliSeq
 
-
 ## Installation
 1. [Install Nextflow](https://www.nextflow.io/docs/latest/install.html)
 2. Clone the repository
