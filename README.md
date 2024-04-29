@@ -21,7 +21,7 @@ nextflow run long-read-ampliseq/main.nf \
 --reference <reference fasta> \
 --primers <fasta containing primers> \
 --target_regions_bed <BED file containing target regions> \
---additional_metadata <CSV of additional metadata>
+--additional_metadata <CSV of additional metadata> \
 -profile docker
 ```
 
