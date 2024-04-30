@@ -29,7 +29,6 @@ process PYTHON_COVERAGE_OVER_DEFINED_REGIONS {
 }
 
 process PYTHON_PLOT_COVERAGE {
-    tag "${meta.ID}"
     label 'cpu_1'
     label 'mem_1'
     label 'time_30m'

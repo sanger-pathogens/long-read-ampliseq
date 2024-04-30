@@ -61,7 +61,7 @@ workflow POST_MAP_QC {
         .collectFile(name: "${params.outdir}/qc/bam_filtering/on_and_off_target_stats.csv", keepHeader: true, skip: 1) { it[1] }
 
     PYTHON_COVERAGE_OVER_DEFINED_REGIONS.out.coverage_summary
-        .collect()
+        .collect() { it[1] }
         .set { coverage_summaries }
 
     PYTHON_PLOT_COVERAGE(coverage_summaries)
