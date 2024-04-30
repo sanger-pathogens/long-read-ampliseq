@@ -27,3 +27,25 @@ process PYTHON_COVERAGE_OVER_DEFINED_REGIONS {
         -n ${meta.ID}
     """
 }
+
+process PYTHON_PLOT_COVERAGE {
+    label 'cpu_1'
+    label 'mem_1'
+    label 'time_30m'
+
+    conda "plotly::plotly=5.21.0 "
+    container "quay.io/sangerpathogens/python_graphics:1.0.0"
+
+    publishDir "${params.outdir}/qc/coverage/coverage_summary", mode: 'copy', overwrite: true
+
+    input:
+    path(coverage_summaries)
+
+    output:
+    path("*.html"),  emit: coverage_plot
+
+    script:
+    """
+    plot_coverage.py .
+    """
+}

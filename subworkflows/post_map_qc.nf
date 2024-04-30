@@ -8,7 +8,10 @@ include {
     BEDTOOLS_GENOMECOV;
     BEDTOOLS_COVERAGE
 } from '../modules/bedtools.nf'
-include { PYTHON_COVERAGE_OVER_DEFINED_REGIONS } from '../modules/custom.nf'
+include {
+    PYTHON_COVERAGE_OVER_DEFINED_REGIONS;
+    PYTHON_PLOT_COVERAGE
+} from '../modules/custom.nf'
 
 workflow POST_MAP_QC {
     take:
@@ -56,4 +59,10 @@ workflow POST_MAP_QC {
 
     ON_AND_OFF_TARGET_STATS.out
         .collectFile(name: "${params.outdir}/qc/bam_filtering/on_and_off_target_stats.csv", keepHeader: true, skip: 1) { it[1] }
+
+    PYTHON_COVERAGE_OVER_DEFINED_REGIONS.out.coverage_summary
+        .collect() { it[1] }
+        .set { coverage_summaries }
+
+    PYTHON_PLOT_COVERAGE(coverage_summaries)
 }
