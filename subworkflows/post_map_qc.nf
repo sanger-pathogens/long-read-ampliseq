@@ -2,7 +2,7 @@ include {
     GET_READLENGTH_DISTRIBUTION;
     SAMTOOLS_DEPTH;
     SAMTOOLS_STATS;
-    COUNT_ON_AND_OFF_TARGET_READS
+    ON_AND_OFF_TARGET_STATS
 } from '../modules/samtools.nf'
 include {
     BEDTOOLS_GENOMECOV;
@@ -50,7 +50,10 @@ workflow POST_MAP_QC {
         sorted_reads_bam
     )
 
-    COUNT_ON_AND_OFF_TARGET_READS(
+    ON_AND_OFF_TARGET_STATS(
         on_target_reads_bam.join(off_target_reads_bam)
     )
+
+    ON_AND_OFF_TARGET_STATS.out
+        .collectFile(name: "${params.outdir}/qc/bam_filtering/on_and_off_target_stats.csv", keepHeader: true, skip: 1) { it[1] }
 }

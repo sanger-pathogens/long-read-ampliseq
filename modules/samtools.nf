@@ -152,29 +152,25 @@ process REMOVE_OFF_TARGET_READS {
     """
 }
 
-process COUNT_ON_AND_OFF_TARGET_READS {
+process ON_AND_OFF_TARGET_STATS {
     tag "${meta.ID}"
     label 'cpu_2'
     label 'mem_1'
     label 'time_30m'
 
-    publishDir "${params.outdir}/qc/bam_filtering", mode: 'copy', overwrite: true
-
     conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
 
     input:
-    tuple val(meta), path(on_target_reads_bam), path(on_target_reads_bai), path(off_target_reads_bam)
+    tuple val(meta), path(on_target_reads_bam), path(on_target_reads_bai), path(off_target_reads_bam), path(off_target_reads_bai)
 
     output:
-    tuple val(meta), path("*_target_count.txt"),  emit: on_and_off_target_counts
+    tuple val(meta), path("${on_and_off_target_stats}"),  emit: on_and_off_target_stats
 
     script:
-    on_target_reads_count = "${meta.ID}_on_target_count.txt"
-    off_target_reads_count = "${meta.ID}_off_target_count.txt"
+    on_and_off_target_stats = "${meta.ID}_on_and_off_target_stats.csv"
     """
-    samtools view -c ${on_target_reads_bam} -o ${on_target_reads_count}
-    samtools view -c ${off_target_reads_bam} -o ${off_target_reads_count}
+    on_and_off_target_stats.sh ${meta.ID} ${on_target_reads_bam} ${off_target_reads_bam} ${on_and_off_target_stats}
     """
 }
 
