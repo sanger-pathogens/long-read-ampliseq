@@ -1,5 +1,3 @@
-import org.apache.commons.io.FilenameUtils
-
 include { CONVERT_FAST5_TO_POD5                                                 } from '../modules/pod5.nf'
 include { MODEL_DOWNLOAD; BASECALL; DEMUX; DORADO_SUMMARY; UNASSIGNED_SUMMARY   } from '../modules/dorado.nf'
 include { CONVERT_TO_FASTQ; MERGE_BAMS_FOR_SUMMARY; 
