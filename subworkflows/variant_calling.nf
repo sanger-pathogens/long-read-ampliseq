@@ -1,7 +1,7 @@
 include { CLAIR3_CALL } from '../modules/clair3.nf'
 include { GUNZIP } from '../modules/helper_process.nf'
-
-include { CURATE_CONSENSUS } from '../assorted-sub-workflows/strain_mapper/modules/curate.nf'
+include { CURATE_CONSENSUS } from '../modules/consensus.nf'
+include { CONSTRUCT_PHYLO } from '../assorted-sub-workflows/tree_build/tree_build.nf'
 
 workflow CALL_VARIANTS {
     take:
@@ -14,6 +14,13 @@ workflow CALL_VARIANTS {
 
     GUNZIP( CLAIR3_CALL.out.vcf_out )
     | CURATE_CONSENSUS
+
+    CURATE_CONSENSUS.out.full_consensus.collectFile { meta, file -> [ "merged.fasta", file ] }
+    | CONSTRUCT_PHYLO
+
+    //CURATE_CONSENSUS.out.per_loci.flatten().map{ loci_fasta -> 
+    //    
+    //}
 
     emit:
     CLAIR3_CALL.out.clair3_out

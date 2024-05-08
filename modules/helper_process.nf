@@ -7,13 +7,13 @@ process GUNZIP {
     container 'https://depot.galaxyproject.org/singularity/ubuntu:20.04'
 
     input:
-    tuple val(meta), path(zipped_gvcf), path(reference), path(reference_index)
+    tuple val(meta), path(zipped_vcf), path(reference), path(reference_index)
 
     output:
-    tuple val(meta), path("merge_output.gvcf"), path(reference), path(reference_index), emit: gunzip
+    tuple val(meta), path("*.vcf"), path(reference), path(reference_index), emit: gunzip
 
     script:
     """
-    gunzip -c ${zipped_gvcf} > merge_output.gvcf
+    gunzip -c ${zipped_vcf} > ${meta.ID}.vcf
     """
 }
