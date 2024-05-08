@@ -60,6 +60,9 @@ def get_variant_info(vcf_file):
     variant_info = OrderedDict()
     with VariantFile(vcf_file) as vcf:
         for record in vcf:
+            # handles clair3 bug https://github.com/HKU-BAL/Clair3/issues/271
+            if record.alts is None:
+                continue
             # Extract position, reference allele, and alternate allele from the record
             position = record.pos
             ref_allele = record.ref

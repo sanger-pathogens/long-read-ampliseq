@@ -13,13 +13,13 @@ process CURATE_CONSENSUS {
     tuple val(meta), file(vcf_final), path(reference), path(ref_index)
 
     output:
-    tuple val(meta), path("*_multi_locus.fasta"),  emit: multi_fasta
-    tuple val(meta), path("*_full.fasta"), emit: full_consensus
+    tuple val(meta), path("${meta.ID}.fasta"),  emit: multi_fasta
+    tuple val(meta), path("${meta.ID}_multi_locus.fasta"), emit: full_consensus
     path("*.fa"), emit: per_loci
 
     script:
     """
-    vcf_to_fasta.py -r ${reference} -v ${vcf_final} --fasta_id ${meta.ID} -b ${params.target_regions_bed} -rr --multi_locus -multifasta -o ${meta.ID}
-    vcf_to_fasta.py -r ${reference} -v ${vcf_final} --fasta_id ${meta.ID} -b ${params.target_regions_bed} -singlefasta -o ${meta.ID}
+    vcf_to_fasta.py -r ${reference} -v ${vcf_final} --fasta_id ${meta.ID} -b ${params.target_regions_bed} -rr --multi_locus --multifasta -o ${meta.ID}
+    vcf_to_fasta.py -r ${reference} -v ${vcf_final} --fasta_id ${meta.ID} -b ${params.target_regions_bed} --singlefasta -o ${meta.ID}
     """
 }
