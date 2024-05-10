@@ -1,6 +1,6 @@
 [submodule "lib"]
 	path = lib
-	url = git@gitlab.internal.sanger.ac.uk:sanger-pathogens/pipelines/nextflowtool.git
+	url = ../nextflowtool.git
 [submodule "assorted-sub-workflows"]
 	path = assorted-sub-workflows
-	url = git@gitlab.internal.sanger.ac.uk:sanger-pathogens/pipelines/assorted-sub-workflows.git
+	url = ../assorted-sub-workflows.git
