@@ -22,4 +22,5 @@ process CURATE_CONSENSUS {
     vcf_to_fasta.py -r ${reference} -v ${vcf_final} --fasta_id ${meta.ID} -b ${params.target_regions_bed} -rr --multi_locus --multifasta -o ${meta.ID}
     vcf_to_fasta.py -r ${reference} -v ${vcf_final} --fasta_id ${meta.ID} -b ${params.target_regions_bed} --singlefasta -o ${meta.ID}
     """
+
 }
