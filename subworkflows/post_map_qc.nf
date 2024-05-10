@@ -1,17 +1,23 @@
 include {
     GET_READLENGTH_DISTRIBUTION;
     SAMTOOLS_DEPTH;
-    SAMTOOLS_STATS    
+    SAMTOOLS_STATS;
+    ON_AND_OFF_TARGET_STATS
 } from '../modules/samtools.nf'
 include {
     BEDTOOLS_GENOMECOV;
     BEDTOOLS_COVERAGE
 } from '../modules/bedtools.nf'
-include { PYTHON_COVERAGE_OVER_DEFINED_REGIONS } from '../modules/custom.nf'
+include {
+    PYTHON_COVERAGE_OVER_DEFINED_REGIONS;
+    PYTHON_PLOT_COVERAGE
+} from '../modules/custom.nf'
 
 workflow POST_MAP_QC {
     take:
     sorted_reads_bam
+    on_target_reads_bam
+    off_target_reads_bam
     target_regions_bed
 
     main:
@@ -35,8 +41,7 @@ workflow POST_MAP_QC {
         sorted_reads_bam
     )
 
-    sorted_reads_bam
-        .join(SAMTOOLS_DEPTH.out.samtools_coverage)
+    SAMTOOLS_DEPTH.out.samtools_coverage
         .combine(target_regions_bed)
         .set { coverage_over_defined_regions_input }
 
@@ -47,4 +52,17 @@ workflow POST_MAP_QC {
     SAMTOOLS_STATS(
         sorted_reads_bam
     )
+
+    ON_AND_OFF_TARGET_STATS(
+        on_target_reads_bam.join(off_target_reads_bam)
+    )
+
+    ON_AND_OFF_TARGET_STATS.out
+        .collectFile(name: "${params.outdir}/qc/bam_filtering/on_and_off_target_stats.csv", keepHeader: true, skip: 1) { it[1] }
+
+    PYTHON_COVERAGE_OVER_DEFINED_REGIONS.out.coverage_summary
+        .collect() { it[1] }
+        .set { coverage_summaries }
+
+    PYTHON_PLOT_COVERAGE(coverage_summaries)
 }

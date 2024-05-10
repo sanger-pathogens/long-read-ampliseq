@@ -31,8 +31,8 @@ def argparser():
     parser.add_argument("-v", "--filtered_vcf_file", required=True,
                         help="filtered vcf file path",
                         type=lambda x: parser.is_valid_file(parser, x))
-    parser.add_argument("-o", "--output_fasta_file", required=True,
-                    help="file path to output fasta file")
+    parser.add_argument("-o", "--output_fasta_file_prefix", required=True,
+                    help="prefix for output fasta file")
     parser.add_argument("-i", "--fasta_id",
                     default="auto", help="fasta header ID")
     parser.add_argument("-m", "--multifasta",
@@ -60,6 +60,9 @@ def get_variant_info(vcf_file):
     variant_info = OrderedDict()
     with VariantFile(vcf_file) as vcf:
         for record in vcf:
+            # handles clair3 bug https://github.com/HKU-BAL/Clair3/issues/271
+            if record.alts is None:
+                continue
             # Extract position, reference allele, and alternate allele from the record
             position = record.pos
             ref_allele = record.ref
@@ -113,7 +116,7 @@ def calculate_gaps_to_add(gap_start_position, gap_end_position, gapcharacter):
     takes a start and end position and creates a gap that length with a character of your choosing
 
     returns
-    a string of gap characters n long depending on input
+    a list of gap characters n long depending on input
     """
     return [gapcharacter] * (gap_end_position - gap_start_position)
 
@@ -135,7 +138,7 @@ def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, va
     ref_dict = SeqIO.to_dict(SeqIO.parse(reference_file, "fasta"))
     
     # Read the bed file in
-    bed_df = pd.read_csv(bed_file, sep='\t', header=None, names=['chromosome', 'start', 'end'])
+    bed_df = pd.read_csv(bed_file, sep='\t', header=None, names=['chromosome', 'start', 'end'], usecols=[0, 1, 2])
 
     # Extract sequences
     extracted_sequences = []
@@ -161,11 +164,11 @@ def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, va
     
     return extracted_sequences
 
-def write_sequence(filepath, multi_locus, multifasta, singlefasta, fasta_id, sequence_list):
+def write_sequence(fasta_prefix, multi_locus, multifasta, singlefasta, fasta_id, sequence_list):
     """
     Write sequences to file
 
-    filepath (path): path to write to
+    fasta_prefix (path): prefix of fasta to write to
     multifasta (bool): multifasta or not
     fasta id (str): ID for the fasta header
     sequence list (list): A list of SEQ records to be written to file either as a single fasta or multifasta
@@ -174,24 +177,23 @@ def write_sequence(filepath, multi_locus, multifasta, singlefasta, fasta_id, seq
     writes files returns nothing
     """
     if multifasta:
-        with open(f"{filepath}.fasta", 'w') as output:
+        with open(f"{fasta_prefix}.fasta", 'w') as output:
             for i, sequence in enumerate(sequence_list, start=1):
                 record = SeqRecord(Seq(sequence.seq), id = f"{fasta_id}_{i}", description = '')
                 SeqIO.write(record, output, "fasta")
-                counter +=1
     if multi_locus:
         sequences = [str(sequence.seq) for sequence in sequence_list]
         master_record = "".join(sequences)
-        with open(f"{filepath}_multi_locus.fasta", 'w') as output:
+        with open(f"{fasta_prefix}_multi_locus.fasta", 'w') as output:
             record = SeqRecord(Seq(master_record), id = f"{fasta_id}_multi_locus", description = 'joined ref bed file regions with variants') 
             SeqIO.write(record, output, "fasta")        
     
     if singlefasta:
         for sequence in sequence_list:
             start, end = sequence.description.split("_")
-            final_name = f"{fasta_id}_{start}_{end}"
+            final_name = f"{fasta_prefix}_{start}_{end}"
             with open(f"{final_name}.fa", 'w') as output:
-                    record = SeqRecord(Seq(sequence.seq), id = sequence.id, description = '')
+                    record = SeqRecord(Seq(sequence.seq), id = f"{fasta_id}_{sequence.id}", description = '')
                     SeqIO.write(record, output, "fasta")
                 
 
@@ -208,4 +210,4 @@ if __name__ == '__main__':
     else:
         fasta_id = args.fasta_id
 
-    write_sequence(args.output_fasta_file, args.multi_locus, args.multifasta, args.singlefasta, fasta_id, extracted_sequences)
+    write_sequence(args.output_fasta_file_prefix, args.multi_locus, args.multifasta, args.singlefasta, fasta_id, extracted_sequences)
