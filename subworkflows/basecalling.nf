@@ -3,57 +3,13 @@ include { MODEL_DOWNLOAD; BASECALL; DEMUX; DORADO_SUMMARY; UNASSIGNED_SUMMARY   
 include { CONVERT_TO_FASTQ; MERGE_BAMS_FOR_SUMMARY; 
         MANAGE_DUPLICATES_FROM_BAMS as REMOVE_DUPLICATES_FROM_BAMS;
         MANAGE_DUPLICATES_FROM_BAMS as KEEP_DUPLICATES_FROM_BAMS                } from '../modules/samtools.nf'
+include { SUMMARY_DUPLICATES                                                    } from '../modules/summary_duplicates.nf'
 include { PYCOQC                                                                } from '../modules/pycoqc.nf'
 
 def validateSingleFormat(listOfFormats){
     if (listOfFormats.size() != 1) {
         log.error("Multiple signal filetypes ${listOfFormats} found in '${params.raw_read_dir}'. Please separate filetypes into distinct directories and process indepedently.")
     }
-}
-
-def mark_read_duplicates_in_summary(sequencing_summary, outputFilePath, keep_or_remove){
-    def filePath = sequencing_summary.toString()
-
-    //make a directory in work if it doesn't exist
-    def baseDir = new File(outputFilePath)
-
-    if(!baseDir.exists()) {
-        baseDir.mkdir()
-    }
-
-    // Read the TSV file
-    def tsvFile = new File(filePath)
-
-    //make a set to store what we have seen
-    def column2Set = new HashSet<String>()
-    def duplicates=[]
-
-    // Iterate over each line in the file
-    tsvFile.eachLine { line ->
-        // Split the line by tabs
-        def columns = line.split('\t')
-    
-        // Ensure the line has at least two columns
-        if (columns.size() >= 2) {
-            def value = columns[1]
-            if (column2Set.contains(value)) {
-                duplicates << value
-            } else {
-                column2Set.add(value)
-            }
-        }
-    }
-
-    //for samtools view if the file starts with ^ it removes all entrys from the file instead of keeping them
-    def finalPath = "${baseDir}/duplicates_${workflow.runName}.txt"
-
-    def outputFile = new File(finalPath)
-
-    duplicates.each { value ->
-        outputFile.append(value + '\n')
-    }
-
-    return finalPath
 }
 
 workflow BASECALLING {  
@@ -112,7 +68,7 @@ workflow BASECALLING {
     if (params.barcode_kit_name.size() >= 2) {
 
         //sort classified by marking the duplicates in the summary then removing them from the bams
-        LONG_READ_QC.out.summary_channel.map{ mark_read_duplicates_in_summary(it, "${workflow.workDir}/summary_duplicates/", "remove") }
+        SUMMARY_DUPLICATES(LONG_READ_QC.out.summary_channel, "remove")
         | set { duplicate_classified_list }
 
         barcode_bam_ch.filter{ meta, long_bam -> long_bam.name != "unclassified.bam"}
@@ -222,7 +178,7 @@ workflow SORT_UNCLASSIFIED {
     | set{ unclassified_summary }
 
     //sort unclassified
-    unclassified_summary.map{ mark_read_duplicates_in_summary(it, "${workflow.workDir}/unclassified_duplicates/", "keep") }
+    SUMMARY_DUPLICATES(unclassified_summary, "keep")
     | set{ unclassified_duplicates }
 
     MERGE_BAMS_FOR_SUMMARY.out.summary_bam
