@@ -1,14 +1,6 @@
 def mark_read_duplicates_in_summary(sequencing_summary, outputFilePath, keep_or_remove){
     def filePath = sequencing_summary.toString()
 
-    /*make a directory in work if it doesn't exist
-    def baseDir = new File(outputFilePath)
-
-    if(!baseDir.exists()) {
-        baseDir.mkdir()
-    }
-    */
-
     // Read the TSV file
     def tsvFile = new File(filePath)
 
