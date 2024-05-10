@@ -5,15 +5,16 @@
 2. [Install Docker](https://docs.docker.com/engine/install/)
 3. Clone the repository
 
-    With SSH:
+    With SSH (will need an SSH key- instructions [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)):
     ```
-    git clone --recurse-submodules git@gitlab.internal.sanger.ac.uk:sanger-pathogens/pipelines/long-read-ampliseq.git
+    git clone --recurse-submodules git@github.com:sanger-pathogens/long-read-ampliseq.git
     ```
 
     With HTTPS:
     ```
-    git clone --recurse-submodules https://gitlab.internal.sanger.ac.uk/sanger-pathogens/pipelines/long-read-ampliseq.git
+    git clone --recurse-submodules https://github.com/sanger-pathogens/long-read-ampliseq.git
     ```
+    You may need to enter a personal access token for authentication in place of a password- please see this [guide](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens). 
 
 ## Usage
 ```
