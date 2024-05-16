@@ -65,8 +65,12 @@ workflow BASECALLING {
 
     LONG_READ_QC(barcode_bam_ch)
 
-    if (params.barcode_kit_name.size() >= 2) {
 
+    
+    if (params.barcode_kit_name.size() == 1) {
+        barcode_bam_ch.set { bam_ch }
+
+    } else {
         //sort classified by marking the duplicates in the summary then removing them from the bams
         SUMMARY_DUPLICATES(LONG_READ_QC.out.summary_channel, "remove")
         | set { duplicate_classified_list }
@@ -83,9 +87,6 @@ workflow BASECALLING {
 
         REMOVE_DUPLICATES_FROM_BAMS.out.bam
         | set { bam_ch }
-
-    } else {
-        barcode_bam_ch.set { bam_ch }
     }
     
     bam_ch
@@ -98,22 +99,22 @@ workflow BASECALLING {
     | set { bam_with_metadata_ch }
 
     if (params.read_format == "fastq") {
-        if (params.barcode_kit_name.size() >= 2) {
-            bam_with_metadata_ch.mix(SORT_UNCLASSIFIED.out.cleaned_unassigned)
-            | CONVERT_TO_FASTQ
+        if (params.barcode_kit_name.size() == 1) {
+            CONVERT_TO_FASTQ(bam_with_metadata_ch)
             | set { long_reads_ch }
 
         } else {
-            CONVERT_TO_FASTQ(bam_with_metadata_ch)
+            bam_with_metadata_ch.mix(SORT_UNCLASSIFIED.out.cleaned_unassigned)
+            | CONVERT_TO_FASTQ
             | set { long_reads_ch }
         }
     } else {
-        if (params.barcode_kit_name.size() >= 2) {
-            bam_with_metadata_ch.mix(SORT_UNCLASSIFIED.out.cleaned_unassigned)
-            | set { long_reads_ch }
-            
-        } else {
+        if (params.barcode_kit_name.size() == 1) {
             bam_with_metadata_ch
+            | set { long_reads_ch }
+
+        } else {
+            bam_with_metadata_ch.mix(SORT_UNCLASSIFIED.out.cleaned_unassigned)
             | set { long_reads_ch }
         }
     }
@@ -150,12 +151,12 @@ workflow LONG_READ_QC {
     PYCOQC(summary_channel)
 
     //if there are multiple barcode kits condense unclassified channel into 1 object to be merged
-    if (params.barcode_kit_name.size() >= 2) {
-        summarise_channel.unclassified.collect()
+    if (params.barcode_kit_name.size() == 1) {
+        summarise_channel.unclassified
         | set{ unclassified_ch }
 
     } else {
-        summarise_channel.unclassified
+        summarise_channel.unclassified.collect()
         | set{ unclassified_ch }
     }
 

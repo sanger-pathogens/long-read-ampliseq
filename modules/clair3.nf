@@ -20,20 +20,23 @@ process CLAIR3_CALL {
 
     script:
     """
-    run_clair3.sh \
-    --bam_fn=${filtered_bam} \
-    --ref_fn=${reference} \
-    --threads=${task.cpus} \
-    --platform="ont" \
-    --model_path="/opt/models/${params.clair3_model}" \
-    --output=. \
-    --sample_name=${meta.ID} \
-    --bed_fn=${target_regions_bed} \
-    --no_phasing_for_fa \
-    --include_all_ctgs \
-    --haploid_precise \
-    --call_snp_only \
-    --keep_iupac_bases \
+    run_clair3.sh \\
+    --bam_fn=${filtered_bam} \\
+    --ref_fn=${reference} \\
+    --threads=${task.cpus} \\
+    --platform="ont" \\
+    --model_path="${params.clair3_model}" \\
+    --output=. \\
+    --sample_name=${meta.ID} \\
+    --bed_fn=${target_regions_bed} \\
+    --no_phasing_for_fa \\
+    --var_pct_full=1 \\
+    --ref_pct_full=1 \\
+    --var_pct_phasing=1 \\
+    --include_all_ctgs \\
+    --haploid_precise \\
+    --call_snp_only \\
+    --keep_iupac_bases \\
     --gvcf
     """
 }
