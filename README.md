@@ -29,6 +29,7 @@ nextflow run long-read-ampliseq/main.nf \
 --additional_metadata <CSV mapping sample IDs to barcodes> \
 -profile docker
 ```
+The [examples](examples) folder contains some example files
 
 ##### Other parameters:
 
