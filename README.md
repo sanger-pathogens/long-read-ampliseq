@@ -57,6 +57,8 @@ nextflow run long-read-ampliseq/main.nf \
 
 ###### Variant calling
 - --clair3_model = "r941_prom_hac_g360+g422"
+
+###### Tree building
 - --remove_recombination = false
 - --raxml_base_model = 'GTR+G4'
 - --raxml_threads = 2
