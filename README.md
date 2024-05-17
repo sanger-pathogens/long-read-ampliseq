@@ -5,12 +5,15 @@
 2. [Install Docker](https://docs.docker.com/engine/install/)
 3. Clone the repository
 
+    Please note you will also need access to the [assorted-sub-workflows](https://github.com/sanger-pathogens/assorted-sub-workflows/tree/b065b17b0ee663483fa14c09fc9b1dede9afa8ba) and [nextflowtool](https://github.com/sanger-pathogens/nextflowtool/tree/74b25a9346d243db662caccb777296061400b65a) submodule repos
+
     With SSH (will need an SSH key- instructions [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)):
     ```
     git clone --recurse-submodules git@github.com:sanger-pathogens/long-read-ampliseq.git
     ```
 
     With HTTPS:
+    
     ```
     git clone --recurse-submodules https://github.com/sanger-pathogens/long-read-ampliseq.git
     ```
@@ -23,7 +26,7 @@ nextflow run long-read-ampliseq/main.nf \
 --reference <reference fasta> \
 --primers <fasta containing primers> \
 --target_regions_bed <BED file containing target regions> \
---additional_metadata <CSV of additional metadata> \
+--additional_metadata <CSV mapping sample IDs to barcodes> \
 -profile docker
 ```
 
@@ -54,6 +57,10 @@ nextflow run long-read-ampliseq/main.nf \
 
 ###### Variant calling
 - --clair3_model = "r941_prom_hac_g360+g422"
+- --remove_recombination = false
+- --raxml_base_model = 'GTR+G4'
+- --raxml_threads = 2
+
 
 ## Support
 Please contact PaM Informatics for support through our [helpdesk portal](https://jira.sanger.ac.uk/servicedesk/customer/portal/16) or for external users please reach out by email: pam-informatics@sanger.ac.uk
