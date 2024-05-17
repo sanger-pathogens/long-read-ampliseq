@@ -1,93 +1,69 @@
 # Long read AmpliSeq
 
-
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.internal.sanger.ac.uk/sanger-pathogens/pipelines/long-read-ampliseq.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.internal.sanger.ac.uk/sanger-pathogens/pipelines/long-read-ampliseq/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
 ## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+1. [Install Nextflow](https://www.nextflow.io/docs/latest/install.html)
+2. [Install Docker](https://docs.docker.com/engine/install/)
+3. Clone the repository
+
+    Please note you will also need access to the [assorted-sub-workflows](https://github.com/sanger-pathogens/assorted-sub-workflows/tree/b065b17b0ee663483fa14c09fc9b1dede9afa8ba) and [nextflowtool](https://github.com/sanger-pathogens/nextflowtool/tree/74b25a9346d243db662caccb777296061400b65a) submodule repos
+
+    With SSH (will need an SSH key- instructions [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)):
+    ```
+    git clone --recurse-submodules git@github.com:sanger-pathogens/long-read-ampliseq.git
+    ```
+
+    With HTTPS:
+    
+    ```
+    git clone --recurse-submodules https://github.com/sanger-pathogens/long-read-ampliseq.git
+    ```
+    You may need to enter a personal access token for authentication in place of a password- please see this [guide](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens). 
 
 ## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+```
+nextflow run long-read-ampliseq/main.nf \
+--raw_read_dir <directory containing FAST5/POD5 files> \
+--reference <reference fasta> \
+--primers <fasta containing primers> \
+--target_regions_bed <BED file containing target regions> \
+--additional_metadata <CSV mapping sample IDs to barcodes> \
+-profile docker
+```
+The [examples](examples) folder contains some example files
+
+##### Other parameters:
+
+###### Basecalling
+- --basecall = "true"
+- --basecall_model = "dna_r9.4.1_e8_hac@v3.3"
+- --trim_adapters = "all"
+- --barcode_kit_name = ["EXP-NBD104", "EXP-NBD114"]
+- --read_format = "fastq"
+
+###### Saving output files
+- --keep_sorted_bam = true
+- --save_fastqs = true
+- --save_trimmed = true
+- --save_too_short = true
+- --save_too_long = true
+
+###### QC
+- --qc_reads = true
+- --min_qscore = 9
+- --cutadapt_args = "-e 0.15 --no-indels --overlap 18"
+- --lower_read_length_cutoff = 450
+- --upper_read_length_cutoff = 800
+- --coverage_reporting_thresholds = "1,2,8,10,25,30,40,50,100"
+- --coverage_filtering_threshold = "25"
+
+###### Variant calling
+- --clair3_model = "r941_prom_hac_g360+g422"
+
+###### Tree building
+- --remove_recombination = false
+- --raxml_base_model = 'GTR+G4'
+- --raxml_threads = 2
+
 
 ## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Please contact PaM Informatics for support through our [helpdesk portal](https://jira.sanger.ac.uk/servicedesk/customer/portal/16) or for external users please reach out by email: pam-informatics@sanger.ac.uk
