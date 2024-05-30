@@ -29,12 +29,13 @@ process CLAIR3_CALL {
     --output=. \\
     --sample_name=${meta.ID} \\
     --bed_fn=${target_regions_bed} \\
-    --no_phasing_for_fa \\
     --include_all_ctgs \\
     --haploid_precise \\
-    --min_coverage=10 \\
+    --min_coverage=5 \\
     --call_snp_only \\
-    --chunk_size=1000 \\
-    --gvcf
+    --print_ref_calls \\
+    --gvcf \\
+    --var_pct_full=1 \\
+    --ref_pct_full=1
     """
 }
