@@ -4,7 +4,7 @@ process CLAIR3_CALL {
     label "mem_32"
     label "time_12"
 
-    container  'hkubal/clair3:v1.0.8'
+    container  'hkubal/clair3:v1.0.9'
 
     publishDir "${params.outdir}/variants/", mode: 'copy', overwrite: true, pattern: 'merge_output.gvcf.gz', saveAs: { filename -> "${meta.ID}_clair3.gvcf.gz" }
     publishDir "${params.outdir}/variants/logs/", mode: 'copy', overwrite: true, pattern: 'run_clair3.log', saveAs: { filename -> "${meta.ID}_clair3.log" }
@@ -30,13 +30,11 @@ process CLAIR3_CALL {
     --sample_name=${meta.ID} \\
     --bed_fn=${target_regions_bed} \\
     --no_phasing_for_fa \\
-    --var_pct_full=1 \\
-    --ref_pct_full=1 \\
-    --var_pct_phasing=1 \\
     --include_all_ctgs \\
     --haploid_precise \\
+    --min_coverage=10 \\
     --call_snp_only \\
-    --keep_iupac_bases \\
+    --chunk_size=1000 \\
     --gvcf
     """
 }
