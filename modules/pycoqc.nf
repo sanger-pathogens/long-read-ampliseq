@@ -6,8 +6,8 @@ process PYCOQC {
         path(sequence_summary_file)
 
     output:
-        path("*.html")
-        path("*.json")
+        path("*.html"), emit: html
+        path("*.json"), emit: json
         
     script:
     final_qc_file = "summary_pycoqc"

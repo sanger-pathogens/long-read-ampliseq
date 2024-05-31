@@ -52,6 +52,7 @@ workflow POST_MAP_QC {
     SAMTOOLS_STATS(
         sorted_reads_bam
     )
+    SAMTOOLS_STATS.out.stats_ch.set { ch_samtools_stats }
 
     ON_AND_OFF_TARGET_STATS(
         on_target_reads_bam.join(off_target_reads_bam)
@@ -65,4 +66,7 @@ workflow POST_MAP_QC {
         .set { coverage_summaries }
 
     PYTHON_PLOT_COVERAGE(coverage_summaries)
+
+    emit:
+    ch_samtools_stats
 }

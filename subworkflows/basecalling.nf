@@ -64,6 +64,8 @@ workflow BASECALLING {
     | set{ barcode_bam_ch }
 
     LONG_READ_QC(barcode_bam_ch)
+    LONG_READ_QC.out.pycoqc_json
+    | set { pycoqc_json }
 
     if (params.barcode_kit_name.size() >= 2) {
 
@@ -120,7 +122,8 @@ workflow BASECALLING {
 
     emit:
     long_reads_ch
-    LONG_READ_QC.out.summary_channel
+    LONG_READ_QC.out.summary_channel  //TODO - Why no complaint about this, but LONG_READ_QC.out.pycoqc_json wouldn't work?
+    pycoqc_json
     //model_ch = MODEL_DOWNLOAD.out.model_ch.map{ pod5, model -> model} //currently not useful as we use 9.4.1 flow cells but later this could be useful
 }
 
@@ -148,6 +151,8 @@ workflow LONG_READ_QC {
     
     
     PYCOQC(summary_channel)
+    PYCOQC.out.json
+    | set { pycoqc_json }
 
     //if there are multiple barcode kits condense unclassified channel into 1 object to be merged
     if (params.barcode_kit_name.size() >= 2) {
@@ -162,6 +167,7 @@ workflow LONG_READ_QC {
     emit:
     summary_channel
     unclassified_ch
+    pycoqc_json
 }
 
 workflow SORT_UNCLASSIFIED {
