@@ -1,4 +1,4 @@
-include { CONVERT_FAST5_TO_POD5                                                 } from '../modules/pod5.nf'
+include { CONVERT_FAST5_TO_POD5; MERGE_POD5                                     } from '../modules/pod5.nf'
 include { MODEL_DOWNLOAD; BASECALL; DEMUX; DORADO_SUMMARY; UNASSIGNED_SUMMARY   } from '../modules/dorado.nf'
 include { CONVERT_TO_FASTQ; MERGE_BAMS_FOR_SUMMARY; 
         MANAGE_DUPLICATES_FROM_BAMS as REMOVE_DUPLICATES_FROM_BAMS;
@@ -49,7 +49,9 @@ workflow BASECALLING {
     | set{ raw_files }
 
     CONVERT_FAST5_TO_POD5(raw_files.fast5)
-    | mix(raw_files.pod5) //files that were already pod5 are added back in after the convert process
+    
+    MERGE_POD5(raw_files.pod5)
+    | mix(CONVERT_FAST5_TO_POD5.out.pod5_ch) //files that were already pod5 are added back in after the convert process
     | MODEL_DOWNLOAD
     | BASECALL
     
