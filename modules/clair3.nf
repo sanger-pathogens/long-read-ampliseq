@@ -31,7 +31,7 @@ process CLAIR3_CALL {
     --bed_fn=${target_regions_bed} \\
     --include_all_ctgs \\
     --haploid_precise \\
-    --min_coverage=5 \\
+    --min_coverage=${params.clair3_min_coverage} \\
     --call_snp_only \\
     --print_ref_calls \\
     --gvcf \\
