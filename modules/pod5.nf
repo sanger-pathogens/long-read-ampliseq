@@ -32,6 +32,6 @@ process MERGE_POD5 {
 
     script:
     """
-    pod5 convert fast5 --output merged.pod5 -t ${task.cpus} ${pod5s}
+    pod5 merge --output merged.pod5 -t ${task.cpus} ${pod5s}
     """
 }
