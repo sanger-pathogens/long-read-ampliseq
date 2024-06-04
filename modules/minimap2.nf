@@ -36,6 +36,7 @@ process MINIMAP2_ALIGN {
     """
     minimap2 \
         -ax map-ont \
+        --MD \
         -t ${task.cpus} \
         -a ${mm2_index} \
         ${fastq} \
