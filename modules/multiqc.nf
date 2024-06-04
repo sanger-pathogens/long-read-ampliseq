@@ -12,9 +12,9 @@ process MULTIQC {
     publishDir "${params.outdir}/multiqc", mode: 'copy', overwrite: true
 
     input:
+    path('pycoqc/*')
     path('fastqc/*')
     path('samtools_stats/*')
-    path('pycoqc/*')
 
     output:
     path("multiqc_report.html"), emit: report
