@@ -4,7 +4,7 @@ process CLAIR3_CALL {
     label "mem_32"
     label "time_12"
 
-    container  'hkubal/clair3:v1.0.8'
+    container  'hkubal/clair3:v1.0.9'
 
     publishDir "${params.outdir}/variants/", mode: 'copy', overwrite: true, pattern: 'merge_output.gvcf.gz', saveAs: { filename -> "${meta.ID}_clair3.gvcf.gz" }
     publishDir "${params.outdir}/variants/logs/", mode: 'copy', overwrite: true, pattern: 'run_clair3.log', saveAs: { filename -> "${meta.ID}_clair3.log" }
