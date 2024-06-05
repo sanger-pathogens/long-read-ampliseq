@@ -67,8 +67,6 @@ workflow BASECALLING {
 
     LONG_READ_QC(barcode_bam_ch)
 
-
-    
     if (params.barcode_kit_name.size() == 1) {
         barcode_bam_ch.set { bam_ch }
 
@@ -141,14 +139,12 @@ workflow LONG_READ_QC {
             return long_bam
     }.set { summarise_channel }
     
-
     //summarise the bams that have been classified successfully
     
     summarise_channel.classified.collect()
     | MERGE_BAMS_FOR_SUMMARY
     | DORADO_SUMMARY
     | set{ summary_channel }
-    
     
     PYCOQC(summary_channel)
 
