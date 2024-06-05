@@ -51,7 +51,7 @@ workflow BASECALLING {
     CONVERT_FAST5_TO_POD5(raw_files.fast5)
     
     MERGE_POD5(raw_files.pod5)
-    | mix(CONVERT_FAST5_TO_POD5.out.pod5_ch) //files that were already pod5 are added back in after the convert process
+    | mix(CONVERT_FAST5_TO_POD5.out.pod5_ch) //mix in files if there are only fast5's
     | MODEL_DOWNLOAD
     | BASECALL
     
@@ -106,7 +106,7 @@ workflow BASECALLING {
             | set { long_reads_ch }
 
         } else {
-            bam_with_metadata_ch.mix(SORT_UNCLASSIFIED.out.cleaned_unassigned)
+            bam_with_metadata_ch.mix(SORT_UNCLASSIFIED.out.cleaned_unclassified)
             | CONVERT_TO_FASTQ
             | set { long_reads_ch }
         }
@@ -116,7 +116,7 @@ workflow BASECALLING {
             | set { long_reads_ch }
 
         } else {
-            bam_with_metadata_ch.mix(SORT_UNCLASSIFIED.out.cleaned_unassigned)
+            bam_with_metadata_ch.mix(SORT_UNCLASSIFIED.out.cleaned_unclassified)
             | set { long_reads_ch }
         }
     }
@@ -187,17 +187,17 @@ workflow SORT_UNCLASSIFIED {
     MERGE_BAMS_FOR_SUMMARY.out.summary_bam
     | combine(unclassified_duplicates)
     | map { long_bam, sequencing_summary -> 
-        def unassigned_meta = [:]
-        unassigned_meta.barcode_kit = "Multiple"
-        unassigned_meta.barcode = "Unassigned"
-        unassigned_meta.ID = "Unassigned_reads"
-        tuple( unassigned_meta, long_bam, sequencing_summary)
+        def unclassified_meta = [:]
+        unclassified_meta.barcode_kit = "Multiple"
+        unclassified_meta.barcode = "Unassigned"
+        unclassified_meta.ID = "Unassigned_reads"
+        tuple( unclassified_meta, long_bam, sequencing_summary)
     }
-    | set{ unassigned_marked }
+    | set{ unclassified_marked }
 
-    KEEP_DUPLICATES_FROM_BAMS(unassigned_marked, "keep")
-    | set{ cleaned_unassigned }
+    KEEP_DUPLICATES_FROM_BAMS(unclassified_marked, "keep")
+    | set{ cleaned_unclassified }
 
     emit:
-    cleaned_unassigned
+    cleaned_unclassified
 }

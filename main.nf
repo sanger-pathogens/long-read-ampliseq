@@ -61,11 +61,11 @@ workflow {
         BASECALLING.out.long_reads_ch
     )
 
-    BASECALLING.out.long_reads_ch.filter{ meta, bam -> meta.barcode != "Unassigned"}
-    | set { remove_unassigned_for_mapping }
+    BASECALLING.out.long_reads_ch.filter{ meta, bam -> meta.barcode != "unclassified"}
+    | set { remove_unclassified_for_mapping }
 
     PROCESS_FILTER_READS(
-        remove_unassigned_for_mapping
+        remove_unclassified_for_mapping
     )
 
     MAPPING(
