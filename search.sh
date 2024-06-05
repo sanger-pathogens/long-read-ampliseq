@@ -2,7 +2,7 @@
 
 query_file="snps"
 
-directory="/lustre/scratch126/pam/teams/team230/sd28/long-read-ampliseq/results/variants"
+directory="./results/variants"
 
 # Check if the directory exists
 if [ ! -d "$directory" ]; then
