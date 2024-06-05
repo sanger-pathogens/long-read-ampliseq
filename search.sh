@@ -32,7 +32,7 @@ for file in $(find "$directory" -type f -name "*.gz"); do
             #echo "$line: missing"
             ((missing++))
         else
-            #echo "$result"
+            echo "$result"
             ((found++))
         fi
     done < $query_file
