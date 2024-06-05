@@ -22,6 +22,7 @@ for file in $(find "$directory" -type f -name "*.gz"); do
     total=0
     found=0
     missing=0
+    pass_count=0
 
     while IFS= read -r line
     do
@@ -36,8 +37,12 @@ for file in $(find "$directory" -type f -name "*.gz"); do
         fi
     done < $query_file
 
+    # Count total PASS entries in the file
+    pass_count=$(grep -c "PASS" "$example_file")
+
     # Re-gzip the query file
     gzip "$example_file"
 
     echo "$found/$total found"
+    echo "$pass_count Total"
 done
