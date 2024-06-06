@@ -9,10 +9,13 @@ workflow CALL_VARIANTS {
     reference_index_ch
 
     main:
-    filtered_reads_bam_with_bed.combine(reference_index_ch)
+    filtered_reads_bam_with_bed
+    | combine(reference_index_ch)
+    | combine(Channel.fromPath(params.clair3_model))
     | CLAIR3_CALL
 
     GUNZIP( CLAIR3_CALL.out.vcf_out )
+    | combine(Channel.fromPath(params.target_regions_bed))
     | CURATE_CONSENSUS
 
     CURATE_CONSENSUS.out.full_consensus.collectFile { meta, file -> [ "merged.fasta", file ] }
