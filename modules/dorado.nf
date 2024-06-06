@@ -3,7 +3,9 @@ process MODEL_DOWNLOAD {
     label 'mem_4'
     label 'time_30m'
 
-    container 'quay.io/sangerpathogens/cuda_dorado:0.5.1'
+    if (params.dorado_local_path == "") {
+        container 'quay.io/sangerpathogens/cuda_dorado:0.5.1'
+    }
     
     input:
     path(pod5)
@@ -12,9 +14,10 @@ process MODEL_DOWNLOAD {
     tuple path(pod5), path(basecall_model), emit: model_ch
 
     script:
+    dorado = "${params.dorado_local_path == "" ? "dorado" : "${params.dorado_local_path}"}"
     basecall_model = "${params.basecall_model}"
     """
-    dorado download --model ${basecall_model}
+    ${dorado} download --model ${basecall_model}
     """
 }
 
@@ -75,7 +78,9 @@ process DORADO_SUMMARY {
 
     publishDir path: "${params.outdir}/sequencing_summary/", mode: 'copy', overwrite: true, pattern: "summary.tsv"
 
-    container 'quay.io/sangerpathogens/cuda_dorado:0.5.1'
+    if (params.dorado_local_path == "") {
+        container 'quay.io/sangerpathogens/cuda_dorado:0.5.1'
+    }
     
     input:
     path(called_bam)
@@ -84,8 +89,9 @@ process DORADO_SUMMARY {
     path("summary.tsv"), emit: summary_channel
 
     script:
+    dorado = "${params.dorado_local_path == "" ? "dorado" : "${params.dorado_local_path}"}"
     """
-    dorado summary ${called_bam} > summary.tsv
+    ${dorado} summary ${called_bam} > summary.tsv
     """
 }
 
@@ -94,7 +100,9 @@ process UNASSIGNED_SUMMARY {
     label 'mem_4'
     label 'time_1'
 
-    container 'quay.io/sangerpathogens/cuda_dorado:0.5.1'
+    if (params.dorado_local_path == "") {
+        container 'quay.io/sangerpathogens/cuda_dorado:0.5.1'
+    }
     
     input:
     path(called_bam)
@@ -103,7 +111,8 @@ process UNASSIGNED_SUMMARY {
     path("summary.tsv"), emit: summary_channel
 
     script:
+    dorado = "${params.dorado_local_path == "" ? "dorado" : "${params.dorado_local_path}"}"
     """
-    dorado summary ${called_bam} > summary.tsv
+    ${dorado} summary ${called_bam} > summary.tsv
     """
 }
