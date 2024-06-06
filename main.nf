@@ -95,7 +95,7 @@ workflow {
     MULTIQC(
         BASECALLING.out.pycoqc_json.ifEmpty([]),
         PRE_MAP_QC.out.ch_fastqc_raw_zip.collect{it[1]}.ifEmpty([]),
-        POST_MAP_QC.out.ch_samtools_stats.collect{it[1]}.ifEmpty([])
+        POST_MAP_QC.out.ch_samtools_stats.collect{it[1,2]}.ifEmpty([])
     )
 }
 
