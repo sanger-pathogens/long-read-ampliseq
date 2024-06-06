@@ -25,7 +25,7 @@ process CLAIR3_CALL {
     --ref_fn=${reference} \\
     --threads=${task.cpus} \\
     --platform="ont" \\
-    --model_path="/opt/models/r941_prom_hac_g360+g422" \\
+    --model_path="${params.clair3_model}" \\
     --output=. \\
     --sample_name=${meta.ID} \\
     --bed_fn=${target_regions_bed} \\
