@@ -8,7 +8,10 @@ include { MULTIQC } from './modules/multiqc.nf'
 //
 
 include { BASECALLING } from './subworkflows/basecalling.nf'
-include { PRE_MAP_QC } from './subworkflows/pre_map_qc.nf'
+include {
+    PRE_MAP_QC as PRE_MAP_QC_PRE_TRIM;
+    PRE_MAP_QC as PRE_MAP_QC_POST_TRIM;
+} from './subworkflows/pre_map_qc.nf'
 include { PROCESS_FILTER_READS } from './subworkflows/process_filter_reads.nf'
 include { MAPPING } from './subworkflows/mapping.nf'
 include { FILTER_BAM } from './subworkflows/post_map_filtering.nf'
@@ -58,7 +61,7 @@ workflow {
     INDEX_REF(reference)
     | set { reference_index_ch }
 
-    PRE_MAP_QC(
+    PRE_MAP_QC_PRE_TRIM(
         BASECALLING.out.long_reads_ch
     )
 
@@ -67,6 +70,10 @@ workflow {
 
     PROCESS_FILTER_READS(
         remove_unassigned_for_mapping
+    )
+
+    PRE_MAP_QC_POST_TRIM(
+        PROCESS_FILTER_READS.out.trimmed_reads
     )
 
     MAPPING(
@@ -94,7 +101,8 @@ workflow {
 
     MULTIQC(
         BASECALLING.out.pycoqc_json.ifEmpty([]),
-        PRE_MAP_QC.out.ch_fastqc_raw_zip.collect{it[1]}.ifEmpty([]),
+        PRE_MAP_QC_PRE_TRIM.out.ch_fastqc_raw_zip.collect{it[1]}.ifEmpty([]),
+        PRE_MAP_QC_POST_TRIM.out.ch_fastqc_raw_zip.collect{it[1]}.ifEmpty([]),
         POST_MAP_QC.out.ch_samtools_stats.collect{it[1,2]}.ifEmpty([])
     )
 }

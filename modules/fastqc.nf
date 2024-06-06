@@ -4,7 +4,8 @@ process FASTQC {
     label 'mem_2'
     label 'time_12'
 
-    publishDir "${params.outdir}/qc/fastqc", mode: 'copy', overwrite: true
+    publishDir "${params.outdir}/qc/fastqc_pre_trim", mode: 'copy', overwrite: true, pattern: "${meta.ID}_fastqc.{html,zip}"
+    publishDir "${params.outdir}/qc/fastqc_post_trim", mode: 'copy', overwrite: true, pattern: "${meta.ID}_trimmed_fastqc.{html,zip}"
 
     container 'quay.io/biocontainers/fastqc:0.12.1--hdfd78af_0'
 
@@ -17,9 +18,9 @@ process FASTQC {
 
     script:
     """
-    fastqc \
-        -f fastq \
-        --threads ${task.cpus} \
+    fastqc \\
+        -f fastq \\
+        --threads ${task.cpus} \\
         ${reads}
     """
 }
