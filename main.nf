@@ -1,6 +1,7 @@
 #!/usr/bin/env nextflow
 
 include { INDEX_REF } from './modules/samtools.nf'
+include { MULTIQC } from './modules/multiqc.nf'
 
 //
 // SUBWORKFLOWS
@@ -89,6 +90,12 @@ workflow {
     CALL_VARIANTS(
         FILTER_BAM.out.on_target_reads_bam.combine(target_regions_bed),
         reference_index_ch
+    )
+
+    MULTIQC(
+        BASECALLING.out.pycoqc_json.ifEmpty([]),
+        PRE_MAP_QC.out.ch_fastqc_raw_zip.collect{it[1]}.ifEmpty([]),
+        POST_MAP_QC.out.ch_samtools_stats.collect{it[1]}.ifEmpty([])
     )
 }
 
