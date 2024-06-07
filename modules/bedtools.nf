@@ -4,13 +4,14 @@ process BEDTOOLS_GENOMECOV {
     label 'mem_2'
     label 'time_12'
 
-    publishDir "${params.outdir}/qc/coverage/bedtools_genome_coverage", mode: 'copy', overwrite: true, pattern: "*.bedGraph"
+    publishDir "${params.outdir}/qc/${qc_stage}/coverage/bedtools_genome_coverage", mode: 'copy', overwrite: true, pattern: "*.bedGraph"
 
     conda "bioconda::bedtools=2.31.1"
     container "quay.io/biocontainers/bedtools:2.31.1--hf5e1c6e_1"
 
     input:
     tuple val(meta), path(sorted_bam), path(sorted_bam_index)
+    val(qc_stage)
 
     output:
     path("*.bedGraph"), emit: genome_cov_ch
@@ -28,13 +29,14 @@ process BEDTOOLS_COVERAGE {
     label 'mem_2'
     label 'time_12'
 
-    publishDir "${params.outdir}/qc/coverage/bedtools_coverage", mode: 'copy', overwrite: true, pattern: "*coverage.bed"
+    publishDir "${params.outdir}/qc/${qc_stage}/coverage/bedtools_coverage", mode: 'copy', overwrite: true, pattern: "*coverage.bed"
 
     conda "bioconda::bedtools=2.31.1"
     container "quay.io/biocontainers/bedtools:2.31.1--hf5e1c6e_1"
 
     input:
     tuple val(meta), path(sorted_bam), path(sorted_bam_index), path(target_regions_bed)
+    val(qc_stage)
 
     output:
     path("*.bed"), emit: genome_cov_ch

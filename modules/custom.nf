@@ -9,10 +9,11 @@ process PYTHON_COVERAGE_OVER_DEFINED_REGIONS {
     // conda "bioconda::pandas=1.5.2"
     // container "quay.io/biocontainers/pandas:1.5.2"
 
-    publishDir "${params.outdir}/qc/coverage/coverage_summary", mode: 'copy', overwrite: true
+    publishDir "${params.outdir}/qc/${qc_stage}/coverage/coverage_summary", mode: 'copy', overwrite: true
 
     input:
     tuple val(meta), path(samtools_coverage), path(target_regions_bed)
+    val(qc_stage)
     
     output:
     tuple val(meta), path(coverage_summary),  emit: coverage_summary
@@ -36,10 +37,11 @@ process PYTHON_PLOT_COVERAGE {
     conda "plotly::plotly=5.21.0 "
     container "quay.io/sangerpathogens/python_graphics:1.0.0"
 
-    publishDir "${params.outdir}/qc/coverage/coverage_summary", mode: 'copy', overwrite: true
+    publishDir "${params.outdir}/qc/${qc_stage}/coverage/coverage_summary", mode: 'copy', overwrite: true
 
     input:
     path(coverage_summaries)
+    val(qc_stage)
 
     output:
     path("*.html"),  emit: coverage_plot
