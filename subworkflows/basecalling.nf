@@ -55,7 +55,7 @@ workflow BASECALLING {
     | mix(raw_files.pod5) //files that were already pod5 are added back in after the convert process
     | set { pod5_ch }
 
-    if ((params.basecall_model_path != "") && (file(basecall_model_path).exists())) {
+    if ((params.basecall_model_path != "") && (file(params.basecall_model_path).exists())) {
         pod5_ch
         | combine(Channel.fromPath(params.basecall_model_path))
         | BASECALL
