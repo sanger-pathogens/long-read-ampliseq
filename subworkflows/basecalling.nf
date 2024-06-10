@@ -185,8 +185,8 @@ workflow SORT_UNCLASSIFIED {
     | map { long_bam, sequencing_summary -> 
         def unclassified_meta = [:]
         unclassified_meta.barcode_kit = "Multiple"
-        unclassified_meta.barcode = "Unassigned"
-        unclassified_meta.ID = "Unassigned_reads"
+        unclassified_meta.barcode = "Unclassified"
+        unclassified_meta.ID = "Unclassified_reads"
         tuple( unclassified_meta, long_bam, sequencing_summary)
     }
     | set{ unclassified_marked }

@@ -88,10 +88,11 @@ process CONVERT_TO_BAM {
     script:
     mapped_reads_bam = "${meta.ID}.bam"
     """
-    samtools view \
-        -@ ${task.cpus} \
-        -bS -F 2308 \
-        -o ${mapped_reads_bam} \
+    samtools view \\
+        -@ ${task.cpus} \\
+        -bS -F 2308 \\
+        --min-MQ 50 \\
+        -o ${mapped_reads_bam} \\
         ${mapped_reads}
     """
 }

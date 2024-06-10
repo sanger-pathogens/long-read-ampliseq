@@ -36,6 +36,8 @@ process CLAIR3_CALL {
     --print_ref_calls \\
     --gvcf \\
     --var_pct_full=1 \\
-    --ref_pct_full=1
+    --ref_pct_full=1 \\
+    --var_pct_phasing=1 \\
+    --no_phasing_for_fa
     """
 }
