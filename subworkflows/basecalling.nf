@@ -52,7 +52,6 @@ workflow BASECALLING {
     
     MERGE_POD5(raw_files.pod5)
     | mix(CONVERT_FAST5_TO_POD5.out.pod5_ch) //mix in files if there are only fast5's
-    | mix(raw_files.pod5) //files that were already pod5 are added back in after the convert process
     | set { pod5_ch }
 
     if ((params.basecall_model_path != "") && (file(params.basecall_model_path).exists())) {
