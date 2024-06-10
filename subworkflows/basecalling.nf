@@ -1,4 +1,4 @@
-include { CONVERT_FAST5_TO_POD5                                                 } from '../modules/pod5.nf'
+include { CONVERT_FAST5_TO_POD5; MERGE_POD5                                     } from '../modules/pod5.nf'
 include { MODEL_DOWNLOAD; BASECALL; DEMUX; DORADO_SUMMARY; UNASSIGNED_SUMMARY   } from '../modules/dorado.nf'
 include { CONVERT_TO_FASTQ; MERGE_BAMS_FOR_SUMMARY; 
         MANAGE_DUPLICATES_FROM_BAMS as REMOVE_DUPLICATES_FROM_BAMS;
@@ -49,7 +49,9 @@ workflow BASECALLING {
     | set{ raw_files }
 
     CONVERT_FAST5_TO_POD5(raw_files.fast5)
-    | mix(raw_files.pod5) //files that were already pod5 are added back in after the convert process
+    
+    MERGE_POD5(raw_files.pod5)
+    | mix(CONVERT_FAST5_TO_POD5.out.pod5_ch) //mix in files if there are only fast5's
     | MODEL_DOWNLOAD
     | BASECALL
     
@@ -67,8 +69,6 @@ workflow BASECALLING {
     LONG_READ_QC.out.pycoqc_json
     | set { pycoqc_json }
 
-
-    
     if (params.barcode_kit_name.size() == 1) {
         barcode_bam_ch.set { bam_ch }
 
@@ -106,7 +106,7 @@ workflow BASECALLING {
             | set { long_reads_ch }
 
         } else {
-            bam_with_metadata_ch.mix(SORT_UNCLASSIFIED.out.cleaned_unassigned)
+            bam_with_metadata_ch.mix(SORT_UNCLASSIFIED.out.cleaned_unclassified)
             | CONVERT_TO_FASTQ
             | set { long_reads_ch }
         }
@@ -116,7 +116,7 @@ workflow BASECALLING {
             | set { long_reads_ch }
 
         } else {
-            bam_with_metadata_ch.mix(SORT_UNCLASSIFIED.out.cleaned_unassigned)
+            bam_with_metadata_ch.mix(SORT_UNCLASSIFIED.out.cleaned_unclassified)
             | set { long_reads_ch }
         }
     }
@@ -142,14 +142,12 @@ workflow LONG_READ_QC {
             return long_bam
     }.set { summarise_channel }
     
-
     //summarise the bams that have been classified successfully
     
     summarise_channel.classified.collect()
     | MERGE_BAMS_FOR_SUMMARY
     | DORADO_SUMMARY
     | set{ summary_channel }
-    
     
     PYCOQC(summary_channel)
     PYCOQC.out.json
@@ -191,17 +189,17 @@ workflow SORT_UNCLASSIFIED {
     MERGE_BAMS_FOR_SUMMARY.out.summary_bam
     | combine(unclassified_duplicates)
     | map { long_bam, sequencing_summary -> 
-        def unassigned_meta = [:]
-        unassigned_meta.barcode_kit = "Multiple"
-        unassigned_meta.barcode = "Unassigned"
-        unassigned_meta.ID = "Unassigned_reads"
-        tuple( unassigned_meta, long_bam, sequencing_summary)
+        def unclassified_meta = [:]
+        unclassified_meta.barcode_kit = "Multiple"
+        unclassified_meta.barcode = "Unclassified"
+        unclassified_meta.ID = "Unclassified_reads"
+        tuple( unclassified_meta, long_bam, sequencing_summary)
     }
-    | set{ unassigned_marked }
+    | set{ unclassified_marked }
 
-    KEEP_DUPLICATES_FROM_BAMS(unassigned_marked, "keep")
-    | set{ cleaned_unassigned }
+    KEEP_DUPLICATES_FROM_BAMS(unclassified_marked, "keep")
+    | set{ cleaned_unclassified }
 
     emit:
-    cleaned_unassigned
+    cleaned_unclassified
 }
