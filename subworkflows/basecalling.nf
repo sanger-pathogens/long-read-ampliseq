@@ -211,3 +211,4 @@ workflow SORT_UNCLASSIFIED {
 
     emit:
     cleaned_unclassified
+}
