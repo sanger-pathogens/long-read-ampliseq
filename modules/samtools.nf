@@ -103,7 +103,7 @@ process SAMTOOLS_SORT {
     label 'mem_8'
     label 'time_12'
 
-    publishDir "${params.outdir}/mapped_reads/raw", enabled: params.keep_sorted_bam, mode: 'copy', overwrite: true
+    publishDir "${params.outdir}/mapped_reads", enabled: params.keep_sorted_bam, mode: 'copy', overwrite: true
 
     conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
