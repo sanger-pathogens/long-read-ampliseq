@@ -8,11 +8,17 @@ include { MULTIQC } from './modules/multiqc.nf'
 //
 
 include { BASECALLING } from './subworkflows/basecalling.nf'
-include { PRE_MAP_QC } from './subworkflows/pre_map_qc.nf'
+include {
+    PRE_MAP_QC as PRE_MAP_QC_PRE_TRIM;
+    PRE_MAP_QC as PRE_MAP_QC_POST_TRIM;
+} from './subworkflows/pre_map_qc.nf'
 include { PROCESS_FILTER_READS } from './subworkflows/process_filter_reads.nf'
 include { MAPPING } from './subworkflows/mapping.nf'
 include { FILTER_BAM } from './subworkflows/post_map_filtering.nf'
-include { POST_MAP_QC } from './subworkflows/post_map_qc.nf'
+include {
+    POST_MAP_QC;
+    POST_FILTER_QC;
+} from './subworkflows/post_map_qc.nf'
 include { CALL_VARIANTS } from './subworkflows/variant_calling.nf'
 
 def logo = NextflowTool.logo(workflow, params.monochrome_logs)
@@ -58,7 +64,7 @@ workflow {
     INDEX_REF(reference)
     | set { reference_index_ch }
 
-    PRE_MAP_QC(
+    PRE_MAP_QC_PRE_TRIM(
         BASECALLING.out.long_reads_ch
     )
 
@@ -69,18 +75,21 @@ workflow {
         remove_unclassified_for_mapping
     )
 
+    PRE_MAP_QC_POST_TRIM(
+        PROCESS_FILTER_READS.out.trimmed_reads
+    )
+
     MAPPING(
         reference,
         PROCESS_FILTER_READS.out.trimmed_reads
     )
 
     FILTER_BAM(
-        MAPPING.out.sorted_reads_bam,
+        MAPPING.out.mapped_reads_bam,
         target_regions_bed
     )
 
-    POST_MAP_QC(
-        MAPPING.out.sorted_reads_bam,
+    POST_FILTER_QC(
         FILTER_BAM.out.on_target_reads_bam,
         FILTER_BAM.out.off_target_reads_bam,
         target_regions_bed
@@ -94,8 +103,10 @@ workflow {
 
     MULTIQC(
         BASECALLING.out.pycoqc_json.ifEmpty([]),
-        PRE_MAP_QC.out.ch_fastqc_raw_zip.collect{it[1]}.ifEmpty([]),
-        POST_MAP_QC.out.ch_samtools_stats.collect{it[1]}.ifEmpty([])
+        PRE_MAP_QC_PRE_TRIM.out.ch_fastqc_raw_zip.collect{it[1]}.ifEmpty([]),
+        PRE_MAP_QC_POST_TRIM.out.ch_fastqc_raw_zip.collect{it[1]}.ifEmpty([]),
+        MAPPING.out.ch_samtools_stats.collect{it[1,2]}.ifEmpty([]),
+        POST_FILTER_QC.out.ch_samtools_stats.collect{it[1,2]}.ifEmpty([])
     )
 }
 

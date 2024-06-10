@@ -103,7 +103,7 @@ process SAMTOOLS_SORT {
     label 'mem_8'
     label 'time_12'
 
-    publishDir "${params.outdir}/mapped_reads", enabled: params.keep_sorted_bam, mode: 'copy', overwrite: true
+    publishDir "${params.outdir}/mapped_reads/raw", enabled: params.keep_sorted_bam, mode: 'copy', overwrite: true
 
     conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
@@ -228,19 +228,19 @@ process GET_READLENGTH_DISTRIBUTION {
     label 'mem_8'
     label 'time_12'
 
-    publishDir "${params.outdir}/qc/readlengths", mode: 'copy', overwrite: true
+    publishDir "${params.outdir}/qc/${qc_stage}/readlengths", mode: 'copy', overwrite: true
 
     conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
 
     input:
     tuple val(meta), path(sorted_bam), path(bam_index)
+    val(qc_stage)
 
     output:
     tuple val(meta), path("*.read-lengths.tsv"),  emit: readlengths
 
     script:
-    sorted_bam = "${meta.ID}_sorted.bam"
     """
     samtools view -@ ${task.cpus} ${sorted_bam} | \
     awk '{print length(\$10)}' | sort | uniq -c | sort -n -k 2 | awk -v OFS='\t' '{print \$2,\$1}' \
@@ -257,10 +257,11 @@ process SAMTOOLS_DEPTH {
     conda "bioconda::samtools=1.19"
     container "quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1"
 
-    publishDir "${params.outdir}/qc/coverage/samtools_depth", mode: 'copy', overwrite: true
+    publishDir "${params.outdir}/qc/${qc_stage}/coverage/samtools_depth", mode: 'copy', overwrite: true
 
     input:
     tuple val(meta), path(bam_file), path(bam_index)
+    val(qc_stage)
 
     output:
     tuple val(meta), path(coverage_report),  emit: samtools_coverage
@@ -277,13 +278,14 @@ process SAMTOOLS_STATS {
     label 'mem_1'
     label 'time_30m'
 
-    publishDir "${params.outdir}/qc/samtools_stats", mode: 'copy', overwrite: true
+    publishDir "${params.outdir}/qc/${qc_stage}/samtools_stats", mode: 'copy', overwrite: true
 
     conda "bioconda::samtools=1.19"
     container "quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1"
 
     input:
-    tuple val(meta), path(mapped_reads_bam), path(mapped_reads_bai)
+    tuple val(meta), path(mapped_reads_bam)
+    val(qc_stage)
 
     output:
     tuple val(meta), path(stats_file), path(flagstats_file),  emit: stats_ch

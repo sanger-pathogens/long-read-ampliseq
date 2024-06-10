@@ -13,8 +13,10 @@ process MULTIQC {
 
     input:
     path('pycoqc/*')
-    path('fastqc/*')
-    path('samtools_stats/*')
+    path('fastqc_pre_trim/*')
+    path('fastqc_post_trim/*')
+    path('samtools_stats_post_map/*')
+    path('samtools_stats_post_filter/*')
 
     output:
     path("multiqc_report.html"), emit: report
