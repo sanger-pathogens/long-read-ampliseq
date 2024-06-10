@@ -1,6 +1,6 @@
 #!/bin/bash
 
-query_file="expected_snps_from_illuminia"
+query_file="expected_snps_from_illumina_sequencing"
 
 directory="../results/variants"
 
