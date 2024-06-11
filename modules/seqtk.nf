@@ -3,7 +3,7 @@ process MASK_READS {
     label 'mem_1'
     label 'time_30m'
 
-    container 'quay.io/biocontainers/seqtk:1.3--ha92aebf_0'
+    container 'quay.io/biocontainers/seqtk:1.4--he4a0461_2'
 
     input:
     tuple val(meta), path(fastq_trimmed)

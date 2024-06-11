@@ -10,7 +10,7 @@ process CLAIR3_CALL {
     publishDir "${params.outdir}/variants/logs/", mode: 'copy', overwrite: true, pattern: 'run_clair3.log', saveAs: { filename -> "${meta.ID}_clair3.log" }
 
     input:
-    tuple val(meta), path(filtered_bam), path(bam_index), path(target_regions_bed), path(reference), path(reference_index)
+    tuple val(meta), path(filtered_bam), path(bam_index), path(target_regions_bed), path(reference), path(reference_index), path(clair3_model)
 
     output:
     tuple val(meta), path("merge_output.gvcf.gz"), emit: clair3_out
@@ -25,7 +25,7 @@ process CLAIR3_CALL {
     --ref_fn=${reference} \\
     --threads=${task.cpus} \\
     --platform="ont" \\
-    --model_path="${params.clair3_model}" \\
+    --model_path="${clair3_model}" \\
     --output=. \\
     --sample_name=${meta.ID} \\
     --bed_fn=${target_regions_bed} \\
