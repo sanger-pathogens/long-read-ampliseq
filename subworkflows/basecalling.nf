@@ -52,8 +52,17 @@ workflow BASECALLING {
     
     MERGE_POD5(raw_files.pod5)
     | mix(CONVERT_FAST5_TO_POD5.out.pod5_ch) //mix in files if there are only fast5's
-    | MODEL_DOWNLOAD
-    | BASECALL
+    | set { pod5_ch }
+
+    if ((params.basecall_model_path != "") && (file(params.basecall_model_path).exists())) {
+        pod5_ch
+        | combine(Channel.fromPath(params.basecall_model_path))
+        | BASECALL
+    } else {
+        pod5_ch
+        | MODEL_DOWNLOAD
+        | BASECALL
+    }
     
     DEMUX(BASECALL.out.called_channel, params.barcode_kit_name) //todo https://github.com/nanoporetech/dorado/issues/625 if list of barcodes provided loop over and call for each
     | transpose
