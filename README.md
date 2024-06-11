@@ -86,6 +86,7 @@ The [examples](examples) folder contains some example files
 - --upper_read_length_cutoff = 800
 - --coverage_reporting_thresholds = "1,2,8,10,25,30,40,50,100"
 - --coverage_filtering_threshold = "25"
+- --multiqc_config = ""
 
 ###### Variant calling
 - --clair3_min_coverage = "5"
