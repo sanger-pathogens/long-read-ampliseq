@@ -41,7 +41,7 @@ process BASECALL {
     dorado = "${params.dorado_local_path == "" ? "dorado" : "${params.dorado_local_path}"}"
     min_qscore = "${params.min_qscore == "" ? "" : "--min-qscore ${params.min_qscore}"}"
     """
-    ${dorado} basecaller ${model} --trim ${params.trim_adapters} ${min_qscore} ${pod5} > calls.bam
+    ${dorado} basecaller ${model} --batchsize ${params.basecall_batchsize} --trim ${params.trim_adapters} ${min_qscore} ${pod5} > calls.bam
     """
 }
 
