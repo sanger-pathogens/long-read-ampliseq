@@ -91,7 +91,6 @@ process CONVERT_TO_BAM {
     samtools view \\
         -@ ${task.cpus} \\
         -bS -F 2308 \\
-        --min-MQ 50 \\
         -o ${mapped_reads_bam} \\
         ${mapped_reads}
     """

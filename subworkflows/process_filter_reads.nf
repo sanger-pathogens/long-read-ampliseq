@@ -16,7 +16,7 @@ workflow PROCESS_FILTER_READS {
     
     CUT_PRIMERS(cutadapt_input)
 
-    MASK_READS(CUT_PRIMERS.out.trimmed_reads)
+    CUT_PRIMERS.out.trimmed_reads
     | set { trimmed_reads }
 
     emit:

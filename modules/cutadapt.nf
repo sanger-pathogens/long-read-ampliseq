@@ -33,10 +33,6 @@ process CUT_PRIMERS {
         -M ${params.upper_read_length_cutoff} \
         --too-short-output ${too_short_reads} \
         --too-long-output ${too_long_reads} \
-        -e 0.15 \
-        --no-indels \
-        --overlap 18 \
-        -q 15,15 \
         ${params.cutadapt_args} \
         *.fastq.gz
     """
