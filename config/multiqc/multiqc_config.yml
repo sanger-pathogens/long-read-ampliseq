@@ -46,18 +46,35 @@ module_order:
       path_filters:
         - "samtools_stats_post_filter/*"
 
-table_columns_visible:
-  # General Stats table
-  "FastQC":
-    percent_duplicates: False
-    percent_gc: False
-    median_sequence_length: True
+section_comments:
+  general_stats: "To see the QC stage to which a metric applies, hover over the column heading."
 
-table_columns_name:
-  # General Stats table
-  "FastQC":
-    total_sequences: "Seq Count (millions)"
-    percent_fails: "% Modules Failed"
+# Customise units
+read_count_multiplier: 0.001
+read_count_prefix: "K"
+read_count_desc: "thousands"
+
+base_count_multiplier: 0.001
+base_count_prefix: "Kb"
+base_count_desc: "thousands"
+
+long_read_count_multiplier: 0.001
+long_read_count_prefix: "K"
+long_read_count_desc: "thousands"
+
+# Customise FastQC behaviour (https://github.com/MultiQC/MultiQC/blob/v1.22.2/docs/modules/fastqc.md)
+fastqc_config:
+  status_checks: false
+  top_overrepresented_sequences_by: "total"
+
+# Customise plots
+custom_plot_config:
+  fastqc_status_checks: remove
+  fastqc_status_checks-1: remove
+  fastqc_per_base_sequence_quality_plot:
+    title: "FastQC: Mean Base Quality Scores"
+  fastqc_per_base_sequence_quality_plot-1:
+    title: "FastQC: Mean Base Quality Scores"
 
 
 # Customise the module search patterns to speed up execution time
