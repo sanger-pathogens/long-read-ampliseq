@@ -12,7 +12,7 @@
             },
             "trim_adapters": {
                 "default": "all",
-                "help_text": "Trim all adapter sequences from the reads."
+                "help_text": "This is the the same as the default behavior. Any detected adapters or primers will be trimmed"
             },
             "barcode_kit_name": {
                 "default": ["SQK-NBD114-24"],
@@ -76,7 +76,7 @@
             },
             "coverage_reporting_thresholds": {
                 "default": "1,2,8,10,25,30,40,50,100",
-                "help_text": "Coverage thresholds for reporting."
+                "help_text": "Coverage (per-amplicon locus reads depth) thresholds for reporting."
             },
             "coverage_filtering_threshold": {
                 "default": "25",
@@ -90,29 +90,29 @@
         "Reference Files": {
             "reference": {
                 "default": "",
-                "help_text": "Path to the reference genome file."
+                "help_text": "Path to the reference genome file. (mandatory)"
             },
             "raw_read_dir": {
                 "default": "",
-                "help_text": "Directory containing raw read files."
+                "help_text": "Directory containing raw read files. (mandatory)"
             },
             "primers": {
                 "default": "",
-                "help_text": "Path to the primer sequences file."
+                "help_text": "Path to the primer sequences file. (mandatory)"
             },
             "target_regions_bed": {
                 "default": "",
-                "help_text": "Path to the BED file with target regions."
+                "help_text": "Path to the BED file with target regions. (mandatory)"
             },
             "additional_metadata": {
                 "default": "",
-                "help_text": "Path to the metadata file linking samples to barcodes."
+                "help_text": "Path to the metadata file linking samples to barcodes. (mandatory)"
             }
         },
         "Variant Calling": {
             "clair3_model": {
                 "default": "",
-                "help_text": "Path to the Clair3 model for variant calling."
+                "help_text": "Path to the Clair3 model for variant calling. (mandatory)"
             },
             "clair3_min_coverage": {
                 "default": "8",
