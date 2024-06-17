@@ -124,7 +124,7 @@
             },
             "raxml_base_model": {
                 "default": "GTR+G4",
-                "help_text": "Model used by RAxML for phylogenetic analysis."
+                "help_text": "Base model used by RAxML-NG for phylogenetic analysis; ascertainment bias correction may be added if using SNP-restricted alignment."
             },
             "raxml_threads": {
                 "default": 2,
