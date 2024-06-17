@@ -26,5 +26,5 @@ workflow CALL_VARIANTS {
     //}
 
     emit:
-    CLAIR3_CALL.out.clair3_out
+    CLAIR3_CALL.out.clair3_gvcf_out
 }

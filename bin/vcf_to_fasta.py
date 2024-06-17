@@ -60,14 +60,14 @@ def get_variant_info(vcf_file):
     variant_info = OrderedDict()
     with VariantFile(vcf_file) as vcf:
         for record in vcf:
-            # handles clair3 bug https://github.com/HKU-BAL/Clair3/issues/271
-            if record.alts is None:
-                continue
+            # # handles clair3 bug https://github.com/HKU-BAL/Clair3/issues/271
+            # if record.alts is None:
+            #     continue
             # Extract position, reference allele, and alternate allele from the record
             position = record.pos
             ref_allele = record.ref
-            alt_allele = record.alts[0]  # Assuming only one alternate allele is present
-            variant_info[position] = (ref_allele, alt_allele)
+            called_allele = record.alts[0] if (record.alts is not None) else ref_allele # Assuming only one alternate allele is present
+            variant_info[position] = (ref_allele, called_allele)
     return variant_info
 
 def variants_in_range(bed_range, variants):
@@ -128,8 +128,8 @@ def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, va
     Reference (file): The Reference biological sequence (e.g., DNA or RNA).
     Bedfile (file): The positions of the loci's for the above reference
     variant info (file): A VCF file containing variant calls for your chosen sample against the reference
-    replace_reference (str): A binary yes no if the reference should be replaced with gap characters
-    gap_character (str): A character to replace the reference with (normally N)
+    replace_reference (str): A binary yes no if the reference should be replaced with unknown base characters
+    gap_character (str): Where reads cannot support calling a genotype, a character to replace the reference base with (usually N)
 
     Returns:
     list: A list of Seq objects that are reflective of the loci from the reference with variant bases overwritten with their variants as called in the vcf
@@ -139,6 +139,8 @@ def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, va
     
     # Read the bed file in
     bed_df = pd.read_csv(bed_file, sep='\t', header=None, names=['chromosome', 'start', 'end'], usecols=[0, 1, 2])
+    print(bed_df)
+    print(variant_info)
 
     # Extract sequences
     extracted_sequences = []
@@ -156,8 +158,10 @@ def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, va
         variants = variants_in_range(range(start, end), variant_info)
         
         for variant in variants:
+            print(variant)
             adjusted_start = variant[0] - start-1 #adjust to VCF not starting at 1
             sequence = change_base_with_checks(sequence, adjusted_start, variant[1])
+            print(sequence)
 
         sequence_record = SeqRecord(sequence, id=f"{chromosome}_{start}_{end}", description=f"{start}_{end}")
         extracted_sequences.append(sequence_record)
