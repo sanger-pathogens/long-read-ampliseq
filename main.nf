@@ -27,7 +27,7 @@ log.info logo
 
 
 def printHelp() {
-    NextflowTool.help_message("${workflow.ProjectDir}/schema.json",
+    NextflowTool.help_message("${workflow.ProjectDir}/schema.json", [],
     params.monochrome_logs, log)
 }
 
