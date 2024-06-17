@@ -1,5 +1,5 @@
 {
-    "pipeline": "Sequencing-Pipeline",
+    "pipeline": "long-read-ampliseq",
     "params": {
         "Basecalling": {
             "basecall": {
