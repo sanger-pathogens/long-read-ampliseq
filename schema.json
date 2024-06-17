@@ -34,7 +34,7 @@
             },
             "keep_bam_files": {
                 "default": "false",
-                "help_text": "Do not retain intermediate BAM files."
+                "help_text": "Save intermediate BAM files."
             },
             "save_fastqs": {
                 "default": "true",
