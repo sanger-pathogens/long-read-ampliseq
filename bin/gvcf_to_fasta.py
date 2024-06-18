@@ -75,6 +75,8 @@ def get_variant_info(gvcf_file, min_ref_gt_qual, min_alt_gt_qual):
                 if record.alts[0]=='<NON_REF>': # non intuitive from the allele being called NON_REF, but all genotype calls have this
                     if gq >= min_ref_gt_qual:
                         called_allele = ref_allele
+                    else:
+                        continue
                 else:
                     raise ValueError(f"unexpected single allele value for ALT field: {record.alts}")
             elif len(record.alts)==2:
@@ -83,6 +85,8 @@ def get_variant_info(gvcf_file, min_ref_gt_qual, min_alt_gt_qual):
                 else:
                     if gq >= min_alt_gt_qual:
                         called_allele = record.alts[0] # actual alt non-ref variant
+                    else:
+                        continue
             else:
                 raise ValueError(f"unexpected multiple allele value for ALT field: {record.alts}")
             variant_info[position] = (ref_allele, called_allele)
