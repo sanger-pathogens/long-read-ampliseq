@@ -14,7 +14,8 @@ process CLAIR3_CALL {
 
     output:
     tuple val(meta), path("merge_output.gvcf.gz"), emit: clair3_gvcf_out
-    tuple val(meta), path("merge_output.vcf.gz"), path(reference), path(reference_index),  emit: clair3_vcf_out
+    tuple val(meta), path("merge_output.gvcf.gz"), path("merge_output.gvcf.gz.tbi"), path(reference), path(reference_index),  emit: clair3_gvcf_ref_idx_ch
+    tuple val(meta), path("merge_output.vcf.gz"),  emit: clair3_vcf_out
     path("run_clair3.log")
 
 
