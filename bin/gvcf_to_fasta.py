@@ -47,9 +47,9 @@ def argparser():
                     action="store_true", help="replace reference with gap")
     parser.add_argument("-g", "--gap_character", default= 'N', 
                         help="character to use for between amplicon gaps default - leave blank to only include variants (bit useless)")
-    parser.add_argument("-q", "--min_alt_gt_qual", default= '1', 
+    parser.add_argument("-q", "--min_alt_gt_qual", default= '1', type=int,
                         help="minimum genotype quality (GQ) for reporting an ALT variant in consensus sequence; recommended value: 5")
-    parser.add_argument("-Q", "--min_ref_gt_qual", default= '1', 
+    parser.add_argument("-Q", "--min_ref_gt_qual", default= '1', type=int,
                         help="minimum genotype quality (GQ) for reporting a REF variant in consensus sequence; recommended value: 4")
     return parser
 
