@@ -71,8 +71,8 @@ def get_variant_info(gvcf_file, min_ref_gt_qual, min_alt_gt_qual):
 
             if record.alts is None:
                 called_allele = ref_allele
-            elif len(record.alts)==1:
-                if record.alts[0]=='<NON_REF>': # non intuitive from the allele being called NON_REF, but all genotype calls have this
+            elif len(record.alts) == 1:
+                if record.alts[0] == '<NON_REF>': # non intuitive from the allele being called NON_REF, but all genotype calls have this
                     if gq >= min_ref_gt_qual:
                         called_allele = ref_allele
                     else:
