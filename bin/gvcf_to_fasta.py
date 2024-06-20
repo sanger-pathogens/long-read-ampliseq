@@ -79,8 +79,8 @@ def get_variant_info(gvcf_file, min_ref_gt_qual, min_alt_gt_qual):
                         continue
                 else:
                     raise ValueError(f"unexpected single allele value for ALT field: {record.alts}")
-            elif len(record.alts)==2:
-                if record.alts[1]!='<NON_REF>':
+            elif len(record.alts) == 2:
+                if record.alts[1] != '<NON_REF>':
                     raise ValueError(f"unexpected multiple allele value for ALT field: {record.alts}")
                 else:
                     if gq >= min_alt_gt_qual:
