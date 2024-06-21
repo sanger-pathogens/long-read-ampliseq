@@ -25,24 +25,30 @@ def argparser():
     Tool to plot variants onto a reference region as described by a bedfile
     """
     parser = ParserWithErrors(description = description)
+    # input files
     parser.add_argument("-r", "--reference_file", required=True,
                         help="reference fasta file path",
                         type=lambda x: parser.is_valid_file(parser, x))
     parser.add_argument("-v", "--gvcf_file", required=True,
                         help="input gVCF file path",
                         type=lambda x: parser.is_valid_file(parser, x))
+    parser.add_argument("-b", "--bed_file", type=lambda x: parser.is_valid_file(parser, x), required=True,
+                        help="BED file (TSV) defining regions (<name>\t<start>\t<end>)" )
+    # general output
     parser.add_argument("-o", "--output_fasta_file_prefix", required=True,
                     help="prefix for output fasta file")
     parser.add_argument("-i", "--fasta_id",
                     default="auto", help="fasta header ID")
+    # output file type
     parser.add_argument("-m", "--multifasta",
                     action="store_true", help="output one multifasta file per sample containing a sequence record per locus")
     parser.add_argument("-s", "--singlefasta",
                     action="store_true", help="output a fasta file per locus and per sample containing a single sequence record each")
     parser.add_argument("-ml", "--multi_locus",
                     action="store_true", help="output a multi-locus concatenated fasta containing a sequence record per sample")
-    parser.add_argument("-b", "--bed_file", type=lambda x: parser.is_valid_file(parser, x), required=True,
-                        help="BED file (TSV) defining regions (<name>\t<start>\t<end>)" )
+    parser.add_argument("-w", "--whole_genome_fasta",
+                    action="store_true", help="output a (multi)fasta file with whole-geneome sequence representation, one file per sample containing a sequence record per reference chromosome")
+    # processing options
     parser.add_argument("-n", "--unknown_as_n",
                     action="store_true", help="represent genoytpe calls that are not supported with Ns; default is to use the reference sequence allele in that position")
     parser.add_argument("-g", "--gap_character", default= 'N', 
@@ -77,7 +83,6 @@ def get_variant_info(gvcf_file, min_ref_gt_qual, min_alt_gt_qual):
                 if record.alts[0] == '<NON_REF>': # non intuitive from the allele being called NON_REF, but all genotype calls have this
                     if gq >= min_ref_gt_qual:
                         called_allele = ref_allele
-                        print(record)
                         end_block = record.stop
                     else:
                         continue
@@ -162,13 +167,13 @@ def calculate_gaps_to_add(gap_start_position, gap_end_position, gapcharacter):
     """
     return [gapcharacter] * (gap_end_position - gap_start_position)
 
-def extract_sequences_from_bed_and_include_called_genotypes(ref_dict, bed_file, variant_info, unknown_as_n, gap_character):
+def extract_sequences_from_bed_and_include_called_genotypes(ref_dict, bed_df, variant_info, unknown_as_n, gap_character):
     """
     Generate background reference (or gaps) for loci in a bed file replacing reference with variants where they are found
 
     Parameters:
     ref_dict (dict of SeqRecords): The Reference biological sequence (e.g., DNA or RNA).
-    bed_file (file): The positions of the loci's for the above reference
+    bed_df (data.frame): The positions of the loci's for the above reference
     variant_info (file): A VCF file containing variant calls for your chosen sample against the reference
     unknown_as_n (str): A binary yes no if the reference should be replaced with unknown base characters
     gap_character (str): Where reads cannot support calling a genotype, a character to replace the reference base with (usually N)
@@ -176,9 +181,6 @@ def extract_sequences_from_bed_and_include_called_genotypes(ref_dict, bed_file, 
     Returns:
     list: A list of Seq objects that are reflective of the loci from the reference with variant bases overwritten with their variants as called in the gVCF file
     """
-    # Read the bed file in
-    bed_df = pd.read_csv(bed_file, sep='\t', header=None, names=['chromosome', 'start', 'end'], usecols=[0, 1, 2])
-
     # Extract sequences
     extracted_sequences = []
     for index, row in bed_df.iterrows():
@@ -203,13 +205,13 @@ def extract_sequences_from_bed_and_include_called_genotypes(ref_dict, bed_file, 
     
     return extracted_sequences
 
-def write_sequence(fasta_prefix, multi_locus, multifasta, singlefasta, fasta_id, sequence_list, whole_genome_fasta=None):
+def write_sequence(fasta_prefix, fasta_id, sequence_list, multi_locus=True, multifasta=False, singlefasta=False):
     """
     Write sequences to file
 
     fasta_prefix (path): prefix of fasta to write to
-    multi_locus (bool): multilocus concatenate or not
-    multifasta (bool): multifasta or not
+    multi_locus (bool): write multilocus concatenate output or not
+    multifasta (bool): write multifasta output or not
     fasta id (str): ID for the fasta header
     sequence list (list): A list of SEQ records to be written to file either as a single fasta or multifasta
 
@@ -236,12 +238,7 @@ def write_sequence(fasta_prefix, multi_locus, multifasta, singlefasta, fasta_id,
             final_name = f"{fasta_prefix}_{start}_{end}"
             with open(f"{final_name}.fa", 'w') as output:
                     record = SeqRecord(Seq(sequence.seq), id = f"{fasta_id}_{sequence.id}", description = '')
-                    SeqIO.write(record, output, "fasta")
-
-    if whole_genome_fasta:
-        pass
-
-                
+                    SeqIO.write(record, output, "fasta")    
 
 if __name__ == '__main__':
     parser = argparser()
@@ -250,11 +247,15 @@ if __name__ == '__main__':
     #Reference genome as seqrecord
     ref_dict = SeqIO.to_dict(SeqIO.parse(args.reference_file, "fasta"))
 
+    # Read the bed file in
+    locus_bed_df = pd.read_csv(args.bed_file, sep='\t', header=None, names=['chromosome', 'start', 'end'], usecols=[0, 1, 2])
+    print(locus_bed_df)
+
     called_genotypes = get_variant_info(args.gvcf_file, args.min_ref_gt_qual, args.min_alt_gt_qual)
 
     all_called_genotypes = expand_variant_blocks(called_genotypes, ref_dict)
 
-    extracted_sequences = extract_sequences_from_bed_and_include_called_genotypes(ref_dict, args.bed_file, all_called_genotypes, args.unknown_as_n, args.gap_character)
+    extracted_consensus_sequences = extract_sequences_from_bed_and_include_called_genotypes(ref_dict, locus_bed_df, all_called_genotypes, args.unknown_as_n, args.gap_character)
 
     if args.fasta_id == "auto":
         fasta_id = os.path.basename(args.gvcf_file).split('.')[0]
@@ -266,4 +267,14 @@ if __name__ == '__main__':
                    multifasta=args.multifasta, 
                    singlefasta=args.singlefasta, 
                    fasta_id=fasta_id, 
-                   sequence_list=extracted_sequences)
+                   sequence_list=extracted_consensus_sequences)
+    
+    if args.whole_genome_fasta:
+        wgs_bed_df = pd.DataFrame([(chrom, 0, len(seqrec)) for chrom, seqrec in ref_dict.items()], columns=locus_bed_df.columns)
+        wg_consensus_sequences = extract_sequences_from_bed_and_include_called_genotypes(ref_dict, wgs_bed_df, all_called_genotypes, args.unknown_as_n, args.gap_character)
+        write_sequence(fasta_prefix=f"{args.output_fasta_file_prefix}_wg",
+                   multi_locus=False,
+                   multifasta=args.multifasta, 
+                   singlefasta=False, 
+                   fasta_id=fasta_id, 
+                   sequence_list=wg_consensus_sequences)
