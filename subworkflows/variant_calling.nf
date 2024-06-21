@@ -14,7 +14,7 @@ workflow CALL_VARIANTS {
     | combine(Channel.fromPath(params.clair3_model))
     | CLAIR3_CALL
 
-    GUNZIP( CLAIR3_CALL.out.vcf_out )
+    GUNZIP( CLAIR3_CALL.out.clair3_gvcf_ref_idx_ch )
     | combine(Channel.fromPath(params.target_regions_bed))
     | CURATE_CONSENSUS
 
@@ -26,5 +26,5 @@ workflow CALL_VARIANTS {
     //}
 
     emit:
-    CLAIR3_CALL.out.clair3_out
+    CLAIR3_CALL.out.clair3_gvcf_out
 }

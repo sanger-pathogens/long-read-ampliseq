@@ -10,7 +10,7 @@ process CURATE_CONSENSUS {
     container 'quay.io/sangerpathogens/pysam:0.0.2'
 
     input:
-    tuple val(meta), file(vcf_final), path(reference), path(ref_index), path(target_regions_bed)
+    tuple val(meta), file(gvcf_final), file(gvcf_index), path(reference), path(ref_index), path(target_regions_bed)
 
     output:
     tuple val(meta), path("${meta.ID}.fasta"),  emit: multi_fasta
@@ -19,7 +19,7 @@ process CURATE_CONSENSUS {
 
     script:
     """
-    vcf_to_fasta.py -r ${reference} -v ${vcf_final} --fasta_id ${meta.ID} -b ${target_regions_bed} -rr --multi_locus --multifasta -o ${meta.ID}
-    vcf_to_fasta.py -r ${reference} -v ${vcf_final} --fasta_id ${meta.ID} -b ${target_regions_bed} --singlefasta -o ${meta.ID}
+    gvcf_to_fasta.py -r ${reference} -v ${gvcf_final} --fasta_id ${meta.ID} -b ${target_regions_bed} -rr --multi_locus --multifasta -o ${meta.ID} --min_ref_gt_qual ${params.min_ref_gt_qual} --min_alt_gt_qual ${params.min_alt_gt_qual}
+    gvcf_to_fasta.py -r ${reference} -v ${gvcf_final} --fasta_id ${meta.ID} -b ${target_regions_bed} --singlefasta -o ${meta.ID} --min_ref_gt_qual ${params.min_ref_gt_qual} --min_alt_gt_qual ${params.min_alt_gt_qual}
     """
 }
