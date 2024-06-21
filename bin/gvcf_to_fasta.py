@@ -150,7 +150,7 @@ def change_base_with_checks(sequence, position, base_change):
         raise ValueError(f"Position {position} is out of range: {len(sequence)}")
     if old_base != sequence[position].upper() and sequence[position].upper() != "N":
         raise ValueError(f"base at index {position} was expected to be {old_base} in {sequence}")
-    if new_base not in 'ACGTUacgtu':
+    if new_base not in 'ACGTUNacgtun':
         print(position, base_change)
         raise ValueError(f"Variant {new_base} not an accepted base.")
     
