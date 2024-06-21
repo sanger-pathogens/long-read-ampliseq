@@ -107,7 +107,7 @@ The [examples](examples) folder contains some example files
 
 ### -profile standard
 
-This is the default profile and is intended to allow the pipeline to run (with internet access) on the Sanger HPC (farm). It ensures the pipeline can run with the LSF job scheduler and uses singularity images for dependencies management.
+This is the default profile and is intended to allow the pipeline to run (with internet access) on the Sanger HPC (farm). It ensures the pipeline can run with the LSF job scheduler and uses singularity images for dependencies management, as well as the latest versions of the pipeline base configuration (from [PaM Info common config file](https://github.com/sanger-pathogens/nextflow-commons/blob/master/configs/nextflow.config)) and Dorado models.
 
 ### -profile laptop
 
