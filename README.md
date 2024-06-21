@@ -90,6 +90,7 @@ The [examples](examples) folder contains some example files
 
 ###### Variant calling
 - --clair3_min_coverage = "5"
+- --masking_quality = "15"
 
 ###### Tree building
 - --remove_recombination = false

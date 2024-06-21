@@ -129,6 +129,10 @@
             "raxml_threads": {
                 "default": 2,
                 "help_text": "Number of threads for RAxML."
+            },
+            "masking_quality": {
+                "default": 15,
+                "help_text": "Quality score minimum for masking. Scores below this will be replaced with a N."
             }
         },
         "LSF Options": {
