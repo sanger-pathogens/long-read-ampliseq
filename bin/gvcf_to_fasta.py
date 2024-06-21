@@ -36,11 +36,11 @@ def argparser():
     parser.add_argument("-i", "--fasta_id",
                     default="auto", help="fasta header ID")
     parser.add_argument("-m", "--multifasta",
-                    action="store_true", help="multifasta output")
+                    action="store_true", help="output one multifasta file per sample containing a sequence record per locus")
     parser.add_argument("-s", "--singlefasta",
-                    action="store_true", help="single fasta output per locus, per sample")
+                    action="store_true", help="output a fasta file per locus and per sample containing a single sequence record each")
     parser.add_argument("-ml", "--multi_locus",
-                    action="store_true", help="multi locus concatenated fasta")
+                    action="store_true", help="output a multi-locus concatenated fasta containing a sequence record per sample")
     parser.add_argument("-b", "--bed_file", type=lambda x: parser.is_valid_file(parser, x), required=True,
                         help="BED file (TSV) defining regions (<name>\t<start>\t<end>)" )
     parser.add_argument("-n", "--unknown_as_n",
@@ -208,6 +208,7 @@ def write_sequence(fasta_prefix, multi_locus, multifasta, singlefasta, fasta_id,
     Write sequences to file
 
     fasta_prefix (path): prefix of fasta to write to
+    multi_locus (bool): multilocus concatenate or not
     multifasta (bool): multifasta or not
     fasta id (str): ID for the fasta header
     sequence list (list): A list of SEQ records to be written to file either as a single fasta or multifasta
