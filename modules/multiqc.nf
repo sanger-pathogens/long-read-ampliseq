@@ -6,8 +6,8 @@ process MULTIQC {
     //TODO Check if user changes to supplied multiqc config are recognised without this. They didn't seem to be when I was editing the pipeline default multiqc_config.yml.
     cache false
 
-    conda 'bioconda::multiqc=1.22.2'
-    container 'quay.io/biocontainers/multiqc:1.22.2--pyhdfd78af_0'
+    conda 'bioconda::multiqc=1.22.0'
+    container 'quay.io/biocontainers/multiqc:1.22--pyhdfd78af_0'
 
     publishDir "${params.outdir}/multiqc", mode: 'copy', overwrite: true
 
