@@ -68,6 +68,7 @@ def get_variant_info(gvcf_file, min_ref_gt_qual, min_alt_gt_qual):
             position = record.pos - 1 # make it 0-based
             ref_allele = record.ref
             gq = record.samples.items()[0][1]['GQ']
+            end_block = None
 
             if record.alts is None:
                 called_allele = ref_allele
@@ -75,6 +76,8 @@ def get_variant_info(gvcf_file, min_ref_gt_qual, min_alt_gt_qual):
                 if record.alts[0] == '<NON_REF>': # non intuitive from the allele being called NON_REF, but all genotype calls have this
                     if gq >= min_ref_gt_qual:
                         called_allele = ref_allele
+                        print(record)
+                        end_block = record.stop
                     else:
                         continue
                 else:
@@ -89,8 +92,23 @@ def get_variant_info(gvcf_file, min_ref_gt_qual, min_alt_gt_qual):
                         continue
             else:
                 raise ValueError(f"unexpected multiple allele value for ALT field: {record.alts}")
-            variant_info[position] = (ref_allele, called_allele)
+            variant_info[position] = (ref_allele, called_allele, end_block)
     return variant_info
+
+def expand_variant_blocks(variant_info, ref_dict):
+    expanded_variants = {}
+    for key, value in variants.items():
+        pos = key
+        end_block = value[2]
+        expanded_variants[pos] = value[:2]
+        if not end_block is None:
+            # detects definition of a genotype block
+            while pos <= end_block:
+                pos += 1
+                expanded_variants[pos] = (ref_allele, called_allele, end_block)
+    
+    return expanded_variants
+
 
 def variants_in_range(bed_range, variants):
     """
@@ -142,23 +160,20 @@ def calculate_gaps_to_add(gap_start_position, gap_end_position, gapcharacter):
     """
     return [gapcharacter] * (gap_end_position - gap_start_position)
 
-def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, variant_info, replace_reference, gap_character):
+def extract_sequences_from_bed_and_include_variants(ref_dict, bed_file, variant_info, replace_reference, gap_character):
     """
     Generate background reference (or gaps) for loci in a bed file replacing reference with variants where they are found
 
     Parameters:
-    Reference (file): The Reference biological sequence (e.g., DNA or RNA).
-    Bedfile (file): The positions of the loci's for the above reference
-    variant info (file): A VCF file containing variant calls for your chosen sample against the reference
+    ref_dict (dict of SeqRecords): The Reference biological sequence (e.g., DNA or RNA).
+    bed_file (file): The positions of the loci's for the above reference
+    variant_info (file): A VCF file containing variant calls for your chosen sample against the reference
     replace_reference (str): A binary yes no if the reference should be replaced with unknown base characters
     gap_character (str): Where reads cannot support calling a genotype, a character to replace the reference base with (usually N)
 
     Returns:
     list: A list of Seq objects that are reflective of the loci from the reference with variant bases overwritten with their variants as called in the gVCF file
     """
-    #Reference genome as seqrecord
-    ref_dict = SeqIO.to_dict(SeqIO.parse(reference_file, "fasta"))
-    
     # Read the bed file in
     bed_df = pd.read_csv(bed_file, sep='\t', header=None, names=['chromosome', 'start', 'end'], usecols=[0, 1, 2])
 
@@ -225,7 +240,10 @@ if __name__ == '__main__':
 
     variants = get_variant_info(args.gvcf_file, args.min_ref_gt_qual, args.min_alt_gt_qual)
 
-    extracted_sequences = extract_sequences_from_bed_and_include_variants(args.reference_file, args.bed_file, variants, args.replace_reference, args.gap_character)
+    #Reference genome as seqrecord
+    ref_dict = SeqIO.to_dict(SeqIO.parse(reference_file, "fasta"))
+
+    extracted_sequences = extract_sequences_from_bed_and_include_variants(ref_dict, args.bed_file, variants, args.replace_reference, args.gap_character)
 
     if args.fasta_id == "auto":
         fasta_id = os.path.basename(args.gvcf_file).split('.')[0]
