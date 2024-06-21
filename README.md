@@ -1,4 +1,6 @@
-# Long-read Ampliseq: a Nextflow pipeline for basecalling, read mapping, QC, variant calling and analysis of nanopore multiplex amplicon data
+# Long-read Ampliseq
+
+A Nextflow pipeline for basecalling, read mapping, QC, variant calling and analysis of nanopore multiplex amplicon data.
 
 ## Installation
 1. [Install Nextflow](https://www.nextflow.io/docs/latest/install.html)
