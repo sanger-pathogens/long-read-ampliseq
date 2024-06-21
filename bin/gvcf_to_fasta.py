@@ -69,6 +69,7 @@ def get_variant_info(gvcf_file, min_ref_gt_qual, min_alt_gt_qual):
             ref_allele = record.ref
             gq = record.samples.items()[0][1]['GQ']
             end_block = None
+            chrom = record.chrom
 
             if record.alts is None:
                 called_allele = ref_allele
@@ -92,20 +93,21 @@ def get_variant_info(gvcf_file, min_ref_gt_qual, min_alt_gt_qual):
                         continue
             else:
                 raise ValueError(f"unexpected multiple allele value for ALT field: {record.alts}")
-            variant_info[position] = (ref_allele, called_allele, end_block)
+            variant_info[position] = (ref_allele, called_allele, end_block, chrom)
     return variant_info
 
-def expand_variant_blocks(variant_info, ref_dict):
+def expand_variant_blocks(variants, ref_dict):
     expanded_variants = {}
     for key, value in variants.items():
         pos = key
-        end_block = value[2]
+        ref_allele, called_allele, end_block, chrom = value
         expanded_variants[pos] = value[:2]
         if not end_block is None:
             # detects definition of a genotype block
-            while pos <= end_block:
+            while pos < end_block:
                 pos += 1
-                expanded_variants[pos] = (ref_allele, called_allele, end_block)
+                ref_allele = ref_dict[chrom][pos]
+                expanded_variants[pos] = (ref_allele, ref_allele)
     
     return expanded_variants
 
@@ -160,7 +162,7 @@ def calculate_gaps_to_add(gap_start_position, gap_end_position, gapcharacter):
     """
     return [gapcharacter] * (gap_end_position - gap_start_position)
 
-def extract_sequences_from_bed_and_include_variants(ref_dict, bed_file, variant_info, replace_reference, gap_character):
+def extract_sequences_from_bed_and_include_called_genotypes(ref_dict, bed_file, variant_info, replace_reference, gap_character):
     """
     Generate background reference (or gaps) for loci in a bed file replacing reference with variants where they are found
 
@@ -238,12 +240,14 @@ if __name__ == '__main__':
     parser = argparser()
     args = parser.parse_args()
 
-    variants = get_variant_info(args.gvcf_file, args.min_ref_gt_qual, args.min_alt_gt_qual)
-
     #Reference genome as seqrecord
-    ref_dict = SeqIO.to_dict(SeqIO.parse(reference_file, "fasta"))
+    ref_dict = SeqIO.to_dict(SeqIO.parse(args.reference_file, "fasta"))
 
-    extracted_sequences = extract_sequences_from_bed_and_include_variants(ref_dict, args.bed_file, variants, args.replace_reference, args.gap_character)
+    called_genotypes = get_variant_info(args.gvcf_file, args.min_ref_gt_qual, args.min_alt_gt_qual)
+
+    all_called_genotypes = expand_variant_blocks(called_genotypes, ref_dict)
+
+    extracted_sequences = extract_sequences_from_bed_and_include_called_genotypes(ref_dict, args.bed_file, all_called_genotypes, args.replace_reference, args.gap_character)
 
     if args.fasta_id == "auto":
         fasta_id = os.path.basename(args.gvcf_file).split('.')[0]
