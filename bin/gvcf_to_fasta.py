@@ -151,7 +151,8 @@ def change_base_with_checks(sequence, position, base_change):
     if old_base != sequence[position].upper() and sequence[position].upper() != "N":
         raise ValueError(f"base at index {position} was expected to be {old_base} in {sequence}")
     if new_base not in 'ACGTUacgtu':
-        raise ValueError("Variant not an accepted base.")
+        print(position, base_change)
+        raise ValueError(f"Variant {new_base} not an accepted base.")
     
     
     # Change the base at the specified position
@@ -249,7 +250,6 @@ if __name__ == '__main__':
 
     # Read the bed file in
     locus_bed_df = pd.read_csv(args.bed_file, sep='\t', header=None, names=['chromosome', 'start', 'end'], usecols=[0, 1, 2])
-    print(locus_bed_df)
 
     called_genotypes = get_variant_info(args.gvcf_file, args.min_ref_gt_qual, args.min_alt_gt_qual)
 
