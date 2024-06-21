@@ -93,7 +93,11 @@ The [examples](examples) folder contains some example files
 #### Variant calling
 - --clair3_min_coverage = "5"
 
-#### Tree building
+###### Consensus curation
+- --min_ref_gt_qual = 1
+- --min_alt_gt_qual = 1
+
+###### Tree building
 - --remove_recombination = false
 - --raxml_base_model = 'GTR+G4'
 - --raxml_threads = 2

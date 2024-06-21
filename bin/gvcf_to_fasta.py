@@ -28,8 +28,8 @@ def argparser():
     parser.add_argument("-r", "--reference_file", required=True,
                         help="reference fasta file path",
                         type=lambda x: parser.is_valid_file(parser, x))
-    parser.add_argument("-v", "--filtered_vcf_file", required=True,
-                        help="filtered vcf file path",
+    parser.add_argument("-v", "--gvcf_file", required=True,
+                        help="input gVCF file path",
                         type=lambda x: parser.is_valid_file(parser, x))
     parser.add_argument("-o", "--output_fasta_file_prefix", required=True,
                     help="prefix for output fasta file")
@@ -45,29 +45,51 @@ def argparser():
                         help="BED file (TSV) defining regions (<name>\t<start>\t<end>)" )
     parser.add_argument("-rr", "--replace_reference",
                     action="store_true", help="replace reference with gap")
-    parser.add_argument("-g", "--gap_character", default= 'N', help="character to use for between amplicon gaps default - leave blank to only include variants (bit useless)")
+    parser.add_argument("-g", "--gap_character", default= 'N', 
+                        help="character to use for between amplicon gaps default - leave blank to only include variants (bit useless)")
+    parser.add_argument("-q", "--min_alt_gt_qual", default= '1', type=int,
+                        help="minimum genotype quality (GQ) for reporting an ALT variant in consensus sequence; recommended value: 5")
+    parser.add_argument("-Q", "--min_ref_gt_qual", default= '1', type=int,
+                        help="minimum genotype quality (GQ) for reporting a REF variant in consensus sequence; recommended value: 4")
     return parser
 
-def get_variant_info(vcf_file):
+def get_variant_info(gvcf_file, min_ref_gt_qual, min_alt_gt_qual):
     """
-    extracts variants from vcf file
+    extracts variants from gVCF file
 
-    vcf file (file): vcf file to extract variants from
+    gVCF file (file): gVCF file to extract variants from
 
     returns
-    returns a ordereddict of variants from the input vcf
+    returns a ordereddict of variants from the input gVCF
     """
     variant_info = OrderedDict()
-    with VariantFile(vcf_file) as vcf:
-        for record in vcf:
-            # handles clair3 bug https://github.com/HKU-BAL/Clair3/issues/271
-            if record.alts is None:
-                continue
-            # Extract position, reference allele, and alternate allele from the record
-            position = record.pos
+    with VariantFile(gvcf_file) as gvcf:
+        for record in gvcf:
+            position = record.pos - 1 # make it 0-based
             ref_allele = record.ref
-            alt_allele = record.alts[0]  # Assuming only one alternate allele is present
-            variant_info[position] = (ref_allele, alt_allele)
+            gq = record.samples.items()[0][1]['GQ']
+
+            if record.alts is None:
+                called_allele = ref_allele
+            elif len(record.alts) == 1:
+                if record.alts[0] == '<NON_REF>': # non intuitive from the allele being called NON_REF, but all genotype calls have this
+                    if gq >= min_ref_gt_qual:
+                        called_allele = ref_allele
+                    else:
+                        continue
+                else:
+                    raise ValueError(f"unexpected single allele value for ALT field: {record.alts}")
+            elif len(record.alts) == 2:
+                if record.alts[1] != '<NON_REF>':
+                    raise ValueError(f"unexpected multiple allele value for ALT field: {record.alts}")
+                else:
+                    if gq >= min_alt_gt_qual:
+                        called_allele = record.alts[0] # actual alt non-ref variant
+                    else:
+                        continue
+            else:
+                raise ValueError(f"unexpected multiple allele value for ALT field: {record.alts}")
+            variant_info[position] = (ref_allele, called_allele)
     return variant_info
 
 def variants_in_range(bed_range, variants):
@@ -93,7 +115,7 @@ def change_base_with_checks(sequence, position, base_change):
     Parameters:
     sequence (str): The biological sequence (e.g., DNA or RNA).
     position (int): The position (0-based index) where the base should be changed.
-    new_base (str): The new base to replace the one at the specified position.
+    base_change (tuple): Tuple containing old base and new one to replace it with.
 
     Returns:
     str: The modified sequence with the base changed.
@@ -102,7 +124,7 @@ def change_base_with_checks(sequence, position, base_change):
     if position < 0 or position >= len(sequence):
         raise ValueError(f"Position {position} is out of range: {len(sequence)}")
     if old_base != sequence[position].upper() and sequence[position].upper() != "N":
-        raise ValueError(f"{sequence[position-5:position+6]} center base was expected to be {old_base}")
+        raise ValueError(f"base at index {position} was expected to be {old_base} in {sequence}")
     if new_base not in 'ACGTUacgtu':
         raise ValueError("Variant not an accepted base.")
     
@@ -128,11 +150,11 @@ def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, va
     Reference (file): The Reference biological sequence (e.g., DNA or RNA).
     Bedfile (file): The positions of the loci's for the above reference
     variant info (file): A VCF file containing variant calls for your chosen sample against the reference
-    replace_reference (str): A binary yes no if the reference should be replaced with gap characters
-    gap_character (str): A character to replace the reference with (normally N)
+    replace_reference (str): A binary yes no if the reference should be replaced with unknown base characters
+    gap_character (str): Where reads cannot support calling a genotype, a character to replace the reference base with (usually N)
 
     Returns:
-    list: A list of Seq objects that are reflective of the loci from the reference with variant bases overwritten with their variants as called in the vcf
+    list: A list of Seq objects that are reflective of the loci from the reference with variant bases overwritten with their variants as called in the gVCF file
     """
     #Reference genome as seqrecord
     ref_dict = SeqIO.to_dict(SeqIO.parse(reference_file, "fasta"))
@@ -156,7 +178,7 @@ def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, va
         variants = variants_in_range(range(start, end), variant_info)
         
         for variant in variants:
-            adjusted_start = variant[0] - start-1 #adjust to VCF not starting at 1
+            adjusted_start = variant[0] - start
             sequence = change_base_with_checks(sequence, adjusted_start, variant[1])
 
         sequence_record = SeqRecord(sequence, id=f"{chromosome}_{start}_{end}", description=f"{start}_{end}")
@@ -201,12 +223,12 @@ if __name__ == '__main__':
     parser = argparser()
     args = parser.parse_args()
 
-    variants = get_variant_info(args.filtered_vcf_file)
+    variants = get_variant_info(args.gvcf_file, args.min_ref_gt_qual, args.min_alt_gt_qual)
 
     extracted_sequences = extract_sequences_from_bed_and_include_variants(args.reference_file, args.bed_file, variants, args.replace_reference, args.gap_character)
 
     if args.fasta_id == "auto":
-        fasta_id = os.path.basename(args.filtered_vcf_file).split('.')[0]
+        fasta_id = os.path.basename(args.gvcf_file).split('.')[0]
     else:
         fasta_id = args.fasta_id
 
