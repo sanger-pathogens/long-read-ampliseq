@@ -19,7 +19,9 @@ process CURATE_CONSENSUS {
 
     script:
     """
-    gvcf_to_fasta.py -r ${reference} -v ${gvcf_final} --fasta_id ${meta.ID} -b ${target_regions_bed} -rr --multi_locus --multifasta -o ${meta.ID} --min_ref_gt_qual ${params.min_ref_gt_qual} --min_alt_gt_qual ${params.min_alt_gt_qual}
+    # change param name -rr / --replace_reference to something more appropriate e.g. --unknown_as_n
+    gvcf_to_fasta.py -r ${reference} -v ${gvcf_final} --fasta_id ${meta.ID} -b ${target_regions_bed} -un --multi_locus --multifasta -o ${meta.ID} --min_ref_gt_qual ${params.min_ref_gt_qual} --min_alt_gt_qual ${params.min_alt_gt_qual}
+    # below outputs per-sample, per-locus fasta files THAT HAVE REF BASES WHEN UNDEFINED I.E. NO Ns
     gvcf_to_fasta.py -r ${reference} -v ${gvcf_final} --fasta_id ${meta.ID} -b ${target_regions_bed} --singlefasta -o ${meta.ID} --min_ref_gt_qual ${params.min_ref_gt_qual} --min_alt_gt_qual ${params.min_alt_gt_qual}
     """
 }

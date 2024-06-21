@@ -38,13 +38,13 @@ def argparser():
     parser.add_argument("-m", "--multifasta",
                     action="store_true", help="multifasta output")
     parser.add_argument("-s", "--singlefasta",
-                    action="store_true", help="single fasta output per locus")
+                    action="store_true", help="single fasta output per locus, per sample")
     parser.add_argument("-ml", "--multi_locus",
                     action="store_true", help="multi locus concatenated fasta")
     parser.add_argument("-b", "--bed_file", type=lambda x: parser.is_valid_file(parser, x), required=True,
                         help="BED file (TSV) defining regions (<name>\t<start>\t<end>)" )
-    parser.add_argument("-rr", "--replace_reference",
-                    action="store_true", help="replace reference with gap")
+    parser.add_argument("-n", "--unknown_as_n",
+                    action="store_true", help="represent genoytpe calls that are not supported with Ns; default is to use the reference sequence allele in that position")
     parser.add_argument("-g", "--gap_character", default= 'N', 
                         help="character to use for between amplicon gaps default - leave blank to only include variants (bit useless)")
     parser.add_argument("-q", "--min_alt_gt_qual", default= '1', type=int,
@@ -142,7 +142,7 @@ def calculate_gaps_to_add(gap_start_position, gap_end_position, gapcharacter):
     """
     return [gapcharacter] * (gap_end_position - gap_start_position)
 
-def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, variant_info, replace_reference, gap_character):
+def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, variant_info, unknown_as_n, gap_character):
     """
     Generate background reference (or gaps) for loci in a bed file replacing reference with variants where they are found
 
@@ -150,7 +150,7 @@ def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, va
     Reference (file): The Reference biological sequence (e.g., DNA or RNA).
     Bedfile (file): The positions of the loci's for the above reference
     variant info (file): A VCF file containing variant calls for your chosen sample against the reference
-    replace_reference (str): A binary yes no if the reference should be replaced with unknown base characters
+    unknown_as_n (str): A binary yes no if the reference should be replaced with unknown base characters
     gap_character (str): Where reads cannot support calling a genotype, a character to replace the reference base with (usually N)
 
     Returns:
@@ -169,7 +169,7 @@ def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, va
         start = row['start']
         end = row['end']
 
-        if replace_reference:
+        if unknown_as_n:
             gaps = calculate_gaps_to_add(start, end, gap_character)
             sequence = Seq("".join(gaps))
         else:
@@ -186,7 +186,7 @@ def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, va
     
     return extracted_sequences
 
-def write_sequence(fasta_prefix, multi_locus, multifasta, singlefasta, fasta_id, sequence_list):
+def write_sequence(fasta_prefix, multi_locus, multifasta, singlefasta, fasta_id, sequence_list, whole_genome_fasta=None):
     """
     Write sequences to file
 
@@ -194,6 +194,8 @@ def write_sequence(fasta_prefix, multi_locus, multifasta, singlefasta, fasta_id,
     multifasta (bool): multifasta or not
     fasta id (str): ID for the fasta header
     sequence list (list): A list of SEQ records to be written to file either as a single fasta or multifasta
+
+    TO DO : add whole-genome consensus sequence output
 
     returns
     writes files returns nothing
@@ -217,6 +219,10 @@ def write_sequence(fasta_prefix, multi_locus, multifasta, singlefasta, fasta_id,
             with open(f"{final_name}.fa", 'w') as output:
                     record = SeqRecord(Seq(sequence.seq), id = f"{fasta_id}_{sequence.id}", description = '')
                     SeqIO.write(record, output, "fasta")
+
+    if whole_genome_fasta:
+        pass
+
                 
 
 if __name__ == '__main__':
@@ -225,11 +231,16 @@ if __name__ == '__main__':
 
     variants = get_variant_info(args.gvcf_file, args.min_ref_gt_qual, args.min_alt_gt_qual)
 
-    extracted_sequences = extract_sequences_from_bed_and_include_variants(args.reference_file, args.bed_file, variants, args.replace_reference, args.gap_character)
+    extracted_sequences = extract_sequences_from_bed_and_include_variants(args.reference_file, args.bed_file, variants, args.unknown_as_n, args.gap_character)
 
     if args.fasta_id == "auto":
         fasta_id = os.path.basename(args.gvcf_file).split('.')[0]
     else:
         fasta_id = args.fasta_id
 
-    write_sequence(args.output_fasta_file_prefix, args.multi_locus, args.multifasta, args.singlefasta, fasta_id, extracted_sequences)
+    write_sequence(fasta_prefix=args.output_fasta_file_prefix, 
+                   multi_locus=args.multi_locus, 
+                   multifasta=args.multifasta, 
+                   singlefasta=args.singlefasta, 
+                   fasta_id=fasta_id, 
+                   sequence_list=extracted_sequences)
