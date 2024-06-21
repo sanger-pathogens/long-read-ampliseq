@@ -15,6 +15,7 @@ process CURATE_CONSENSUS {
     output:
     tuple val(meta), path("${meta.ID}.fasta"),  emit: multi_fasta
     tuple val(meta), path("${meta.ID}_multi_locus.fasta"), emit: full_consensus
+    tuple val(meta), path("${meta.ID}_wg.fasta"), emit: wg_consensus
     //path("*.fa"), emit: per_loci
 
     script:
