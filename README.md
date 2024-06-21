@@ -111,7 +111,7 @@ This is the default profile and is intended to allow the pipeline to run (with i
 
 ### -profile laptop
 
-This profile has been provided specifically for use with an macOS laptop, on which a docker daemon has been installed via Docker Desktop. The profile has several features that allow the pipeline to be used offline:
+This profile has been provided specifically for use with an laptop running macOS, on which the docker engine is available, e.g. via Docker Desktop. The profile has several features that allow the pipeline to be used offline:
 - A local copy of a configuration file that is otherwise downloaded.
 - Default local paths for the following parameters: `--dorado_local_path`, `--clair3_model`, `--basecall_model_path`
 
