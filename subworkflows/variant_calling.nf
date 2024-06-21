@@ -27,6 +27,8 @@ workflow CALL_VARIANTS {
     CURATE_CONSENSUS.out.full_consensus.collectFile { meta, file -> [ "merged.fasta", file ] }
     | CONSTRUCT_PHYLO
 
+    // TO DO / TO REVIEW
+    // integrate use of per-sample, per-locus fasta files THAT HAVE REF BASES WHEN UNDEFINED I.E. NO Ns 
     //CURATE_CONSENSUS.out.per_loci.flatten().map{ loci_fasta -> 
     //    
     //}

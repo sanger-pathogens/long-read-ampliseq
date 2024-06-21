@@ -15,11 +15,13 @@ process CURATE_CONSENSUS {
     output:
     tuple val(meta), path("${meta.ID}.fasta"),  emit: multi_fasta
     tuple val(meta), path("${meta.ID}_multi_locus.fasta"), emit: full_consensus
-    path("*.fa"), emit: per_loci
+    tuple val(meta), path("${meta.ID}_wg.fasta"), emit: wg_consensus
+    //path("*.fa"), emit: per_loci
 
     script:
     """
-    gvcf_to_fasta.py -r ${reference} -v ${gvcf_final} --fasta_id ${meta.ID} -b ${target_regions_bed} -rr --multi_locus --multifasta -o ${meta.ID} --min_ref_gt_qual ${params.min_ref_gt_qual} --min_alt_gt_qual ${params.min_alt_gt_qual}
-    gvcf_to_fasta.py -r ${reference} -v ${gvcf_final} --fasta_id ${meta.ID} -b ${target_regions_bed} --singlefasta -o ${meta.ID} --min_ref_gt_qual ${params.min_ref_gt_qual} --min_alt_gt_qual ${params.min_alt_gt_qual}
+    gvcf_to_fasta.py -r ${reference} -v ${gvcf_final} --fasta_id ${meta.ID} -b ${target_regions_bed} -n --multi_locus --multifasta --whole_genome_fasta -o ${meta.ID} --min_ref_gt_qual ${params.min_ref_gt_qual} --min_alt_gt_qual ${params.min_alt_gt_qual}
+    # below outputs per-sample, per-locus fasta files THAT HAVE REF BASE AS DEFAULT BASE ON POSITIONS THAT ARE NOT SUPPORTED INSTEAD OF AN N CHAR
+    # gvcf_to_fasta.py -r ${reference} -v ${gvcf_final} --fasta_id ${meta.ID} -b ${target_regions_bed} --singlefasta -o ${meta.ID} --min_ref_gt_qual ${params.min_ref_gt_qual} --min_alt_gt_qual ${params.min_alt_gt_qual}
     """
 }
