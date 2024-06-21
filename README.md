@@ -1,4 +1,6 @@
-# Long-read Ampliseq: a Nextflow pipeline for basecalling, read mapping, QC, variant calling and analysis of nanopore multiplex amplicon data
+# Long-read Ampliseq
+
+A Nextflow pipeline for basecalling, read mapping, QC, variant calling and analysis of nanopore multiplex amplicon data.
 
 ## Installation
 1. [Install Nextflow](https://www.nextflow.io/docs/latest/install.html)
@@ -61,9 +63,9 @@ nextflow run long-read-ampliseq/main.nf \
 ```
 The [examples](examples) folder contains some example files
 
-##### Other parameters:
+### Other parameters:
 
-###### Basecalling
+#### Basecalling
 - --basecall = "true"
 - --basecall_model = "dna_r10.4.1_e8.2_400bps_hac@v4.3.0"
 - --basecall_model_path = ""
@@ -71,14 +73,14 @@ The [examples](examples) folder contains some example files
 - --barcode_kit_name = ["SQK-NBD114-24"] (currently this can only be edited via the config file)
 - --read_format = "fastq"
 
-###### Saving output files
+#### Saving output files
 - --keep_sorted_bam = true
 - --save_fastqs = true
 - --save_trimmed = true
 - --save_too_short = true
 - --save_too_long = true
 
-###### QC
+#### QC
 - --qc_reads = true
 - --min_qscore = 9
 - --cutadapt_args = "-e 0.15 --no-indels --overlap 18"
@@ -88,7 +90,7 @@ The [examples](examples) folder contains some example files
 - --coverage_filtering_threshold = "25"
 - --multiqc_config = ""
 
-###### Variant calling
+#### Variant calling
 - --clair3_min_coverage = "5"
 
 ###### Consensus curation
@@ -100,6 +102,22 @@ The [examples](examples) folder contains some example files
 - --raxml_base_model = 'GTR+G4'
 - --raxml_threads = 2
 
+
+## Profiles
+
+### -profile standard
+
+This is the default profile and is intended to allow the pipeline to run (with internet access) on the Sanger HPC (farm). It ensures the pipeline can run with the LSF job scheduler and uses singularity images for dependencies management, as well as the latest versions of the pipeline base configuration (from [PaM Info common config file](https://github.com/sanger-pathogens/nextflow-commons/blob/master/configs/nextflow.config)) and Dorado models.
+
+### -profile laptop
+
+This profile has been provided specifically for use with an laptop running macOS, on which the docker engine is available, e.g. via Docker Desktop. The profile has several features that allow the pipeline to be used offline:
+- A local copy of a configuration file that is otherwise downloaded.
+- Default local paths for the following parameters: `--dorado_local_path`, `--clair3_model`, `--basecall_model_path`
+
+Should you need to run the pipeline offline, it is best to make use of pre-populated dependency caches. These can be created with any of the supported profiles (e.g. -profile docker) and involves running the pipeline once to completion.
+
+You can override the default paths using the command line parameters directly when invoking nextflow or supplying an additional config file in which these parameters are set, using the `-c my_custom.config` nextflow option.
 
 ## Support
 Please contact PaM Informatics for support through our [helpdesk portal](https://jira.sanger.ac.uk/servicedesk/customer/portal/16) or for external users please reach out by email: pam-informatics@sanger.ac.uk
