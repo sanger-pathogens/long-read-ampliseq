@@ -33,21 +33,11 @@ A Nextflow pipeline for basecalling, read mapping, QC, variant calling and analy
     ```
     Each downloaded model can be found in the repo directory under ```clair3_models/<config>```
 
-6. Clone the repository
-
-    Please note you will also need access to the [assorted-sub-workflows](https://github.com/sanger-pathogens/assorted-sub-workflows/tree/b065b17b0ee663483fa14c09fc9b1dede9afa8ba) and [nextflowtool](https://github.com/sanger-pathogens/nextflowtool/tree/74b25a9346d243db662caccb777296061400b65a) submodule repos
-
-    With SSH (will need an SSH key- instructions [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)):
-    ```
-    git clone --recurse-submodules git@github.com:sanger-pathogens/long-read-ampliseq.git
-    ```
-
-    With HTTPS:
+6. Clone the repository with required submodules
     
     ```
     git clone --recurse-submodules https://github.com/sanger-pathogens/long-read-ampliseq.git
     ```
-    You may need to enter a personal access token for authentication in place of a password- please see this [guide](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens). 
 
 ## Usage
 ```
@@ -61,7 +51,13 @@ nextflow run long-read-ampliseq/main.nf \
 --clair3_model <path to Clair3 model> \
 -profile docker
 ```
-The [examples](examples) folder contains some example files
+The [examples](examples) folder contains some example files.
+
+Instead of `-profile docker`, you can run the pipeline with `-profile laptop`. As well as enabling docker, the laptop profile allows the pipeline to be used offline by providing a local copy of a configuration file that is otherwise downloaded.
+
+Should you need to run the pipeline offline, it is best to make use of pre-populated dependency caches. These can be created with any of the supported profiles (e.g. `-profile docker`) and involves running the pipeline once to completion. You will also need to provide a `--basecall_model_path` (see installation step 4)- the laptop profile includes a default local path for this, as well as `--clair3_model` and `--basecall_model_path`.
+
+You can override the default paths using the command line parameters directly when invoking nextflow or supplying an additional config file in which these parameters are set, using the `-c my_custom.config` nextflow option.
 
 ### Other parameters:
 
@@ -104,21 +100,21 @@ The [examples](examples) folder contains some example files
 - --raxml_threads = 2
 
 
-## Profiles
+## Running on Sanger farm
 
-### -profile standard
+Usage is slightly different:
+```
+nextflow run long-read-ampliseq/main.nf \
+--raw_read_dir <directory containing FAST5/POD5 files> \
+--reference <reference fasta> \
+--primers <fasta containing primers> \
+--target_regions_bed <BED file containing target regions> \
+--additional_metadata <CSV mapping sample IDs to barcodes> \
+--clair3_model <path to Clair3 model> \
+-profile standard
+```
 
-This is the default profile and is intended to allow the pipeline to run (with internet access) on the Sanger HPC (farm). It ensures the pipeline can run with the LSF job scheduler and uses singularity images for dependencies management, as well as the latest versions of the pipeline base configuration (from [PaM Info common config file](https://github.com/sanger-pathogens/nextflow-commons/blob/master/configs/nextflow.config)) and Dorado models.
-
-### -profile laptop
-
-This profile has been provided specifically for use with an laptop running macOS, on which the docker engine is available, e.g. via Docker Desktop. The profile has several features that allow the pipeline to be used offline:
-- A local copy of a configuration file that is otherwise downloaded.
-- Default local paths for the following parameters: `--dorado_local_path`, `--clair3_model`, `--basecall_model_path`
-
-Should you need to run the pipeline offline, it is best to make use of pre-populated dependency caches. These can be created with any of the supported profiles (e.g. -profile docker) and involves running the pipeline once to completion.
-
-You can override the default paths using the command line parameters directly when invoking nextflow or supplying an additional config file in which these parameters are set, using the `-c my_custom.config` nextflow option.
+The standard profile is intended to allow the pipeline to run (with internet access) on the Sanger HPC (farm). It ensures the pipeline can run with the LSF job scheduler and uses singularity images for dependencies management, as well as the latest versions of the pipeline base configuration (from [PaM Info common config file](https://github.com/sanger-pathogens/nextflow-commons/blob/master/configs/nextflow.config)) and Dorado models.
 
 ## Support
 Please contact PaM Informatics for support through our [helpdesk portal](https://jira.sanger.ac.uk/servicedesk/customer/portal/16) or for external users please reach out by email: pam-informatics@sanger.ac.uk
