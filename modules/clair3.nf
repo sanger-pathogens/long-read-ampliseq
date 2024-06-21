@@ -7,6 +7,7 @@ process CLAIR3_CALL {
     container  'hkubal/clair3:v1.0.9'
 
     publishDir "${params.outdir}/variants/", mode: 'copy', overwrite: true, pattern: 'merge_output.gvcf.gz', saveAs: { filename -> "${meta.ID}_clair3.gvcf.gz" }
+    publishDir "${params.outdir}/variants/", mode: 'copy', overwrite: true, pattern: 'merge_output.vcf.gz', saveAs: { filename -> "${meta.ID}_clair3.vcf.gz" }
     publishDir "${params.outdir}/variants/logs/", mode: 'copy', overwrite: true, pattern: 'run_clair3.log', saveAs: { filename -> "${meta.ID}_clair3.log" }
 
     input:
@@ -15,7 +16,7 @@ process CLAIR3_CALL {
     output:
     tuple val(meta), path("merge_output.gvcf.gz"), emit: clair3_gvcf_out
     tuple val(meta), path("merge_output.gvcf.gz"), path("merge_output.gvcf.gz.tbi"), path(reference), path(reference_index),  emit: clair3_gvcf_ref_idx_ch
-    tuple val(meta), path("merge_output.vcf.gz"),  emit: clair3_vcf_out
+    tuple val(meta), path("merge_output.vcf.gz")
     path("run_clair3.log")
 
 
