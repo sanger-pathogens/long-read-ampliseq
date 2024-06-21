@@ -14,7 +14,7 @@ process MASK_READS {
     script:
     fastq_trimmed_split = "${meta.ID}_trimmed_split.fastq"
     """
-    seqtk seq -q 15 -n N ${fastq_trimmed} > ${fastq_trimmed_split}
+    seqtk seq -q ${params.masking_quality} -n N ${fastq_trimmed} > ${fastq_trimmed_split}
 
     gzip ${fastq_trimmed_split}
     """

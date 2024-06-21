@@ -92,6 +92,7 @@ The [examples](examples) folder contains some example files
 
 #### Variant calling
 - --clair3_min_coverage = "5"
+- --masking_quality = "15"
 
 ###### Consensus curation
 - --min_ref_gt_qual = 1
