@@ -3,7 +3,7 @@ process MERGE_GVCF {
     label 'mem_2'
     label 'time_12'
 
-    publishDir "${params.outdir}/variants/merged_gvcf/", mode: 'copy', overwrite: true, pattern: "*_merged.vcf"
+    publishDir "${params.outdir}/variants/merged_gvcf/", mode: 'copy', overwrite: true, pattern: "*_merged.vcf.gz"
 
     conda "bioconda::bcftools=1.20"
     container "quay.io/biocontainers/bcftools:1.20--h8b25389_0"
@@ -12,12 +12,12 @@ process MERGE_GVCF {
     path("variant_vcfs*.gvcf.gz")
 
     output:
-    path("${workflow.runName}_merged.vcf"), emit: merged_vcf
+    path("${workflow.runName}_merged.vcf.gz"), emit: merged_vcf
 
     script:
     """
     find . -name "*.gvcf.gz" -exec bcftools index "{}" \\;
 
-    bcftools merge -R ${params.target_regions_bed} -0 -o ${workflow.runName}_merged.vcf -O v -f PASS *.gvcf.gz
+    bcftools merge -R ${params.target_regions_bed} -0 -o ${workflow.runName}_merged.vcf.gz -O z -f PASS *.gvcf.gz
     """
 }
