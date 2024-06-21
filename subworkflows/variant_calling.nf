@@ -1,7 +1,7 @@
 include { CLAIR3_CALL } from '../modules/clair3.nf'
 include { GUNZIP } from '../modules/helper_process.nf'
 include { CURATE_CONSENSUS } from '../modules/consensus.nf'
-include { MERGE_GVCF } from '../modules/bcftools.nf'
+include { MERGE_GVCF; BCFTOOLS_QUERY } from '../modules/bcftools.nf'
 include { CONSTRUCT_PHYLO } from '../assorted-sub-workflows/tree_build/tree_build.nf'
 
 workflow CALL_VARIANTS {
@@ -22,6 +22,7 @@ workflow CALL_VARIANTS {
     CLAIR3_CALL.out.clair3_out.map{ metadata, path -> path }
     | collect
     | MERGE_GVCF
+    | BCFTOOLS_QUERY
 
     CURATE_CONSENSUS.out.full_consensus.collectFile { meta, file -> [ "merged.fasta", file ] }
     | CONSTRUCT_PHYLO
