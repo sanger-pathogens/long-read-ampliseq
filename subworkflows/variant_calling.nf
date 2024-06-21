@@ -19,7 +19,8 @@ workflow CALL_VARIANTS {
     | combine(Channel.fromPath(params.target_regions_bed))
     | CURATE_CONSENSUS
 
-    CLAIR3_CALL.out.vcf_out.collect()
+    CLAIR3_CALL.out.clair3_out.map{ metadata, path -> path }
+    | collect
     | MERGE_GVCF
 
     CURATE_CONSENSUS.out.full_consensus.collectFile { meta, file -> [ "merged.fasta", file ] }
