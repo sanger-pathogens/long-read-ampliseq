@@ -115,7 +115,7 @@ server <- function(input, output, session) {
     })
     
     # Append the fixed subdirectory path
-    subdirectoryPath <- file.path(directoryPath, "mapped_reads/raw/")
+    subdirectoryPath <- file.path(directoryPath, "mapped_reads/")
     cat("Subdirectory path:", subdirectoryPath, "\n")
     
     # Check if subdirectoryPath exists
