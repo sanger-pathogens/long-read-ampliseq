@@ -65,7 +65,7 @@ def get_variant_info(gvcf_file, min_ref_gt_qual, min_alt_gt_qual):
     variant_info = OrderedDict()
     with VariantFile(gvcf_file) as gvcf:
         for record in gvcf:
-            position = record.pos
+            position = record.pos - 1 # make it 0-based
             ref_allele = record.ref
             gq = record.samples.items()[0][1]['GQ']
 
@@ -115,7 +115,7 @@ def change_base_with_checks(sequence, position, base_change):
     Parameters:
     sequence (str): The biological sequence (e.g., DNA or RNA).
     position (int): The position (0-based index) where the base should be changed.
-    new_base (str): The new base to replace the one at the specified position.
+    base_change (tuple): Tuple containing old base and new one to replace it with.
 
     Returns:
     str: The modified sequence with the base changed.
@@ -124,7 +124,7 @@ def change_base_with_checks(sequence, position, base_change):
     if position < 0 or position >= len(sequence):
         raise ValueError(f"Position {position} is out of range: {len(sequence)}")
     if old_base != sequence[position].upper() and sequence[position].upper() != "N":
-        raise ValueError(f"{sequence[position-5:position+6]} center base was expected to be {old_base}")
+        raise ValueError(f"base at index {position} was expected to be {old_base} in {sequence}")
     if new_base not in 'ACGTUacgtu':
         raise ValueError("Variant not an accepted base.")
     
@@ -178,7 +178,7 @@ def extract_sequences_from_bed_and_include_variants(reference_file, bed_file, va
         variants = variants_in_range(range(start, end), variant_info)
         
         for variant in variants:
-            adjusted_start = variant[0] - start #adjust to VCF not starting at 1
+            adjusted_start = variant[0] - start
             sequence = change_base_with_checks(sequence, adjusted_start, variant[1])
 
         sequence_record = SeqRecord(sequence, id=f"{chromosome}_{start}_{end}", description=f"{start}_{end}")

@@ -19,7 +19,7 @@ process CURATE_CONSENSUS {
 
     script:
     """
-    gvcf_to_fasta.py -r ${reference} -v ${gvcf_final} --fasta_id ${meta.ID} -b ${target_regions_bed} -rr --multi_locus --multifasta -o ${meta.ID}
-    gvcf_to_fasta.py -r ${reference} -v ${gvcf_final} --fasta_id ${meta.ID} -b ${target_regions_bed} --singlefasta -o ${meta.ID}
+    gvcf_to_fasta.py -r ${reference} -v ${gvcf_final} --fasta_id ${meta.ID} -b ${target_regions_bed} -rr --multi_locus --multifasta -o ${meta.ID} --min_ref_gt_qual ${params.min_ref_gt_qual} --min_alt_gt_qual ${params.min_alt_gt_qual}
+    gvcf_to_fasta.py -r ${reference} -v ${gvcf_final} --fasta_id ${meta.ID} -b ${target_regions_bed} --singlefasta -o ${meta.ID} --min_ref_gt_qual ${params.min_ref_gt_qual} --min_alt_gt_qual ${params.min_alt_gt_qual}
     """
 }
