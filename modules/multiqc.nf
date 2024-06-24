@@ -2,6 +2,7 @@ process MULTIQC {
     label 'cpu_1'
     label 'mem_2'
     label 'time_30m'
+    label 'condaOnLaptop'
 
     //TODO Check if user changes to supplied multiqc config are recognised without this. They didn't seem to be when I was editing the pipeline default multiqc_config.yml.
     cache false
