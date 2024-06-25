@@ -102,8 +102,18 @@ You can override the default paths using the command line parameters directly wh
 
 ## Running on Sanger farm
 
-Usage is slightly different:
+Load nextflow and singularity modules:
+```bash
+module load nextflow ISG/singularity
 ```
+
+Clone the repository with required submodules:
+```bash
+git clone --recurse-submodules https://github.com/sanger-pathogens/long-read-ampliseq.git
+```
+
+Usage is slightly different:
+```bash
 nextflow run long-read-ampliseq/main.nf \
 --raw_read_dir <directory containing FAST5/POD5 files> \
 --reference <reference fasta> \
@@ -115,6 +125,16 @@ nextflow run long-read-ampliseq/main.nf \
 ```
 
 The standard profile is intended to allow the pipeline to run (with internet access) on the Sanger HPC (farm). It ensures the pipeline can run with the LSF job scheduler and uses singularity images for dependencies management, as well as the latest versions of the pipeline base configuration (from [PaM Info common config file](https://github.com/sanger-pathogens/nextflow-commons/blob/master/configs/nextflow.config)) and Dorado models.
+
+It's best to run the pipeline as a job in the oversubscribed queue i.e. preface the command with this:
+```bash
+bsub -o output.o -e error.e -q oversubscribed -R "select[mem>4000] rusage[mem=4000]" -M4000
+```
+
+Once your job has finished and you're happy with the output, clean up any intermediate files. To do this (assuming no other pipelines are running from the current working directory), run:
+```bash
+rm -rf work .nextflow*
+```
 
 ## Support
 Please contact PaM Informatics for support through our [helpdesk portal](https://jira.sanger.ac.uk/servicedesk/customer/portal/16) or for external users please reach out by email: pam-informatics@sanger.ac.uk
