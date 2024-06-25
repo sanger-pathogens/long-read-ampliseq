@@ -112,7 +112,7 @@ Clone the repository with required submodules:
 git clone --recurse-submodules https://github.com/sanger-pathogens/long-read-ampliseq.git
 ```
 
-Usage is slightly different:
+Usage is slightly different (you use the standard profile and don't need `--dorado_local_path`):
 ```bash
 nextflow run long-read-ampliseq/main.nf \
 --raw_read_dir <directory containing FAST5/POD5 files> \
