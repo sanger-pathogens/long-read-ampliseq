@@ -4,7 +4,7 @@ process PYTHON_COVERAGE_OVER_DEFINED_REGIONS {
     label 'mem_1'
     label 'time_1'
 
-    conda "bioconda::pandas=2.2.1"
+    //conda "bioconda::pandas=2.2.1"
     container "quay.io/sangerpathogens/pandas:2.2.1"
     // conda "bioconda::pandas=1.5.2"
     // container "quay.io/biocontainers/pandas:1.5.2"
@@ -34,7 +34,7 @@ process PYTHON_PLOT_COVERAGE {
     label 'mem_1'
     label 'time_30m'
 
-    conda "plotly::plotly=5.21.0 "
+    //conda "plotly::plotly=5.21.0 "
     container "quay.io/sangerpathogens/python_graphics:1.0.0"
 
     publishDir "${params.outdir}/qc/${qc_stage}/coverage/coverage_summary", mode: 'copy', overwrite: true

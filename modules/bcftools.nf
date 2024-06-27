@@ -5,7 +5,7 @@ process MERGE_GVCF {
 
     publishDir "${params.outdir}/variants/merged_gvcf/", mode: 'copy', overwrite: true, pattern: "*_merged.vcf.gz"
 
-    conda "bioconda::bcftools=1.20"
+    //conda "bioconda::bcftools=1.20"
     container "quay.io/biocontainers/bcftools:1.20--h8b25389_0"
 
     input:
@@ -33,7 +33,7 @@ process BCFTOOLS_QUERY {
 
     publishDir "${params.outdir}/variants/merged_gvcf/", mode: 'copy', overwrite: true, pattern: "*.tsv"
 
-    conda "bioconda::bcftools=1.20"
+    //conda "bioconda::bcftools=1.20"
     container "quay.io/biocontainers/bcftools:1.20--h8b25389_0"
 
     input:

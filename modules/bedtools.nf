@@ -6,7 +6,7 @@ process BEDTOOLS_GENOMECOV {
 
     publishDir "${params.outdir}/qc/${qc_stage}/coverage/bedtools_genome_coverage", mode: 'copy', overwrite: true, pattern: "*.bedGraph"
 
-    conda "bioconda::bedtools=2.31.1"
+    //conda "bioconda::bedtools=2.31.1"
     container "quay.io/biocontainers/bedtools:2.31.1--hf5e1c6e_1"
 
     input:
@@ -31,7 +31,7 @@ process BEDTOOLS_COVERAGE {
 
     publishDir "${params.outdir}/qc/${qc_stage}/coverage/bedtools_coverage", mode: 'copy', overwrite: true, pattern: "*coverage.bed"
 
-    conda "bioconda::bedtools=2.31.1"
+    //conda "bioconda::bedtools=2.31.1"
     container "quay.io/biocontainers/bedtools:2.31.1--hf5e1c6e_1"
 
     input:

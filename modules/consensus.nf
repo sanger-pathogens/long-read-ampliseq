@@ -6,7 +6,7 @@ process CURATE_CONSENSUS {
 
     publishDir "${params.outdir}/curated_consensus", pattern: "*.fasta", mode: 'copy', overwrite: true
 
-    conda 'conda-forge::python=3.10.2'
+    //conda 'conda-forge::python=3.10.2'
     container 'quay.io/sangerpathogens/pysam:0.0.2'
 
     input:

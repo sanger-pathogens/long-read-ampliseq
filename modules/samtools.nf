@@ -5,7 +5,7 @@ process CONVERT_TO_FASTQ {
 
     publishDir path: "${params.outdir}/fastqs/", enabled: params.save_fastqs, mode: 'copy', overwrite: true, pattern: "*.fastq.gz"
     
-    conda 'bioconda::samtools=1.19'
+    //conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
 
     input:
@@ -27,7 +27,7 @@ process MERGE_BAMS_FOR_SUMMARY {
     label 'mem_1'
     label 'time_1'
     
-    conda 'bioconda::samtools=1.19'
+    //conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
 
     input:
@@ -48,7 +48,7 @@ process MANAGE_DUPLICATES_FROM_BAMS {
     label 'mem_4'
     label 'time_1'
 
-    conda "bioconda::samtools=1.19"
+    //conda "bioconda::samtools=1.19"
     container "quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1"
 
     input:
@@ -76,7 +76,7 @@ process CONVERT_TO_BAM {
     label 'mem_1'
     label 'time_30m'
     
-    conda 'bioconda::samtools=1.19'
+    //conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
 
     input:
@@ -105,7 +105,7 @@ process SAMTOOLS_SORT {
 
     publishDir "${params.outdir}/mapped_reads", enabled: params.keep_sorted_bam, mode: 'copy', overwrite: true
 
-    conda 'bioconda::samtools=1.19'
+    //conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
 
     input:
@@ -130,7 +130,7 @@ process REMOVE_OFF_TARGET_READS {
     label 'mem_1'
     label 'time_30m'
 
-    conda 'bioconda::samtools=1.19'
+    //conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
 
     input:
@@ -159,7 +159,7 @@ process ON_AND_OFF_TARGET_STATS {
     label 'mem_1'
     label 'time_30m'
 
-    conda 'bioconda::samtools=1.19'
+    //conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
 
     input:
@@ -182,7 +182,7 @@ process INDEX_REF {
 
     publishDir "${params.outdir}/sorted_ref", mode: 'copy', overwrite: true
 
-    conda 'bioconda::samtools=1.19'
+    //conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
 
     input:
@@ -204,7 +204,7 @@ process SAMTOOLS_INDEX_BAM {
     label 'mem_1'
     label 'time_1'
 
-    conda "bioconda::samtools=1.19"
+    //conda "bioconda::samtools=1.19"
     container "quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1"
 
     publishDir "${params.outdir}/mapped_reads", enabled: params.keep_bam_files, mode: 'copy', overwrite: true, pattern: "*.bai"
@@ -230,7 +230,7 @@ process GET_READLENGTH_DISTRIBUTION {
 
     publishDir "${params.outdir}/qc/${qc_stage}/readlengths", mode: 'copy', overwrite: true
 
-    conda 'bioconda::samtools=1.19'
+    //conda 'bioconda::samtools=1.19'
     container 'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1'
 
     input:
@@ -254,7 +254,7 @@ process SAMTOOLS_DEPTH {
     label 'mem_1'
     label 'time_1'
 
-    conda "bioconda::samtools=1.19"
+    //conda "bioconda::samtools=1.19"
     container "quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1"
 
     publishDir "${params.outdir}/qc/${qc_stage}/coverage/samtools_depth", mode: 'copy', overwrite: true
@@ -280,7 +280,7 @@ process SAMTOOLS_STATS {
 
     publishDir "${params.outdir}/qc/${qc_stage}/samtools_stats", mode: 'copy', overwrite: true
 
-    conda "bioconda::samtools=1.19"
+    //conda "bioconda::samtools=1.19"
     container "quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1"
 
     input:

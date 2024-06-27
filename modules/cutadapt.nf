@@ -7,7 +7,7 @@ process CUT_PRIMERS {
     publishDir path: "${params.outdir}/cutadapt/", enabled: params.save_too_short, mode: 'copy', overwrite: true, pattern: "*_too_short.fastq.gz"
     publishDir path: "${params.outdir}/cutadapt/", enabled: params.save_too_long, mode: 'copy', overwrite: true, pattern: "*_too_long.fastq.gz"
     
-    conda 'bioconda::cutadapt=4.7'
+    //conda 'bioconda::cutadapt=4.7'
     container 'quay.io/biocontainers/cutadapt:4.7--py310h4b81fae_1'
 
     input:

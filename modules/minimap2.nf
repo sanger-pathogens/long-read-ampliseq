@@ -3,7 +3,7 @@ process MINIMAP2_INDEX {
     label 'mem_4'
     label 'time_1'
 
-    conda "bioconda::minimap2=2.26"
+    //conda "bioconda::minimap2=2.26"
     container "quay.io/biocontainers/minimap2:2.26--he4a0461_2"
 
     input:
@@ -23,7 +23,7 @@ process MINIMAP2_ALIGN {
     label 'mem_4'
     label 'time_1'
 
-    conda "bioconda::minimap2=2.26"
+    //conda "bioconda::minimap2=2.26"
     container "quay.io/biocontainers/minimap2:2.26--he4a0461_2"
 
     input:
