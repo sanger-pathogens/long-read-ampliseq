@@ -7,7 +7,9 @@ library(ggstance)
 library(ape)
 library(phangorn)
 library(ggtree)
-library(ggimage)
+#library(ggimage)
+library(ggnewscale)
+library(cowplot)
 
 x.theme.axis.rotate.angle <- theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 legend.size <- theme(legend.key.size = unit(0.55,"line"))
@@ -51,7 +53,7 @@ ui <- fluidPage(
       hr(),
       plotOutput(outputId = "p.ontargetmapping"),
       hr(),
-      
+      tags$h4("Amplicon Coverage"), 
       navset_card_underline(
         nav_panel("Median", plotOutput("p.median.cov")),
         nav_panel("Minimum", plotOutput("p.min.cov")),
@@ -61,9 +63,22 @@ ui <- fluidPage(
       tags$h3("Sample Relatedness"), 
       textOutput("SNPcount"),
       p("Note, if ≤10 SNPs are identified, consider investigating further."),
+      tags$h4("NJ Phylogeny for Run"), 
       plotOutput(outputId = "p.NJ.tree"),
+      hr(),
+      tags$h4("Contextualised NJ Tree"), 
+      column(
+        width = 10, uiOutput("p.contextual.tree.ui")
+      ),
+      #tags$h4("Contextualised NJ Tree"), 
+      #plotOutput(outputId = "p.contextual.tree"),
+      hr(),
+      tags$h3("Resistance/Lineage Summary"),
+      plotOutput("p.Lineage.Resistance.bars"),
+      hr(),
+      tags$h3("Sample Report"),
+      dataTableOutput("t.resistancetable"),
       hr()
-      
       
     )
   )
@@ -287,7 +302,7 @@ server <- function(input, output, session) {
     # make plot
     p.pipeline.status <- pipelineStatusMelt() %>%
       ggplot(aes(y=Samples, x=Process, fill=Process.done)) +
-      geom_tile(color='grey95', alpha=0.5) +
+      geom_tile(color='grey95', alpha=0.5, size=1.5) +
       theme_bw() + theme.text.size + legend.size + x.theme.axis.rotate.angle +
       scale_x_discrete(expand = c(0, 0)) +
       scale_fill_manual(values=c("green3", "red1"), breaks=c("yes","no")) +
@@ -295,9 +310,6 @@ server <- function(input, output, session) {
       theme(legend.position='top')
     p.pipeline.status
   })
-  
-  
-  
   
   
   # Reactive data for read length distributions
@@ -430,31 +442,38 @@ server <- function(input, output, session) {
   
   # Prepare and plot a basic phylogeny of SNPs
   
-  # Reactive data for per sample amplicon coverage
+  
   collatedPhylo <- reactive({
     req(input$selected_files)
     
     # Read in concatenated SNPs (in fasta format)
-    SNP.concat.directory <- file.path(parseDirPath(c(home = "~"), input$directory), "snp_aln/")
-    cat("\nChecking SNP files\n")
-    cat("SNP file path:", SNP.concat.directory, "\n")
+    # Specify path for data
+    multi_locus.filepath <- file.path(parseDirPath(c(home = "~"), input$directory), "curated_consensus/") 
+    multi_locus.files <- paste0(multi_locus.filepath, input$selected_files, "_multi_locus.fasta", sep="")
     
-    AmpliSeq.full.fasta.file <- paste0(SNP.concat.directory, "merged.fasta.snp.aln")
-    cat("SNP file:", AmpliSeq.full.fasta.file)
-    AmpliSeq.full.fasta <- read.dna(AmpliSeq.full.fasta.file, 'fasta')
+    cat("\nChecking multi-locus directory\n")
+    cat("Multi-locus file path:", multi_locus.filepath, "\n")
+    cat("Multi-locus file list:", multi_locus.files, "\n")
     
-    # Update tip labels
-    AmpliSeq.full.fasta <- updateLabel(AmpliSeq.full.fasta, labels(AmpliSeq.full.fasta), gsub("\\_multi\\_locus","",labels(AmpliSeq.full.fasta)))
+    # read fasta files into a list
+    multi_locus.sequences <- lapply(multi_locus.files, read.dna, format = "fasta")
+    # convert into an alignment
+    multi_locus.sequences_alignment <- do.call("rbind", multi_locus.sequences)
+    # Update fasta headers
+    AmpliSeq.full.multi_locus.fasta <- updateLabel(multi_locus.sequences_alignment, labels(multi_locus.sequences_alignment), gsub("\\_multi\\_locus\\ joined.+$","",labels(multi_locus.sequences_alignment)))
     
     # Subset tip labels to the selection
-    AmpliSeq.full.fasta.selected <- AmpliSeq.full.fasta[labels(AmpliSeq.full.fasta) %in% input$selected_files,]
+    AmpliSeq.full.multi_locus.selected <- AmpliSeq.full.multi_locus.fasta[labels(AmpliSeq.full.multi_locus.fasta) %in% input$selected_files,]
     
     # Convert to a phyDat object, calculate a distance matrix using phangorn, then infer an NJ tree 
+    AmpliSeq.full.multi_locus.selected.phydat <- phyDat(AmpliSeq.full.multi_locus.selected, type = "DNA", levels = NULL)
     cat("\nMaking NJ tree\n")
-    AmpliSeq.full.fasta.selected.phydat <- phyDat(AmpliSeq.full.fasta.selected, type = "DNA", levels = NULL)
-    AmpliSeq.full.fasta.selected.dna_dist <- dist.ml(AmpliSeq.full.fasta.selected.phydat, model="JC69")
-    AmpliSeq.full.fasta.selected.phydat.NJ <- NJ(AmpliSeq.full.fasta.selected.dna_dist)
-    AmpliSeq.full.fasta.selected.phydat.NJ
+    AmpliSeq.full.multi_locus.selected.dna_dist <- dist.ml(AmpliSeq.full.multi_locus.selected.phydat, model="JC69")
+    AmpliSeq.full.multi_locus.selected.NJ <- NJ(AmpliSeq.full.multi_locus.selected.dna_dist)
+    midpoint(AmpliSeq.full.multi_locus.selected.NJ)
+    #cat("\nMaking ML tree\n")
+    #AmpliSeq.full.multi_locus.selected.phydat_fitGTR <- pml_bb(AmpliSeq.full.multi_locus.selected.phydat, model="GTR+G(4)+I")
+    #midpoint(AmpliSeq.full.multi_locus.selected.phydat_fitGTR$tree)
   })
   
   output$p.NJ.tree <- renderPlot({
@@ -462,8 +481,9 @@ server <- function(input, output, session) {
     options(ignore.negative.edge=TRUE)
     p.AmpliSeq.full.selectedNJ <- ggtree(collatedPhylo() ) +
       geom_tiplab(size=text.size.within) +
-      coord_cartesian(xlim=c(0,max(ggtree(collatedPhylo() )$data$x)+2)) +
-      geom_treescale()
+      #coord_cartesian(xlim=c(0,max(ggtree(collatedPhylo() )$data$x)+2)) +
+      coord_cartesian(xlim=c(0,max(ggtree(collatedPhylo() )$data$x)+0.0001)) + 
+      geom_treescale(fontsize=text.size.within)
     p.AmpliSeq.full.selectedNJ
   })
   
@@ -488,6 +508,202 @@ server <- function(input, output, session) {
     }
     paste("There were ", SNPslength(), " SNPs identified in the dataset.", collapse = "")
   })
+  
+  
+  ## Now add contextual data
+  
+  # Specify contextual data
+  AmpliSeq_contextual.fasta.file <- "/Users/mb29/Treponema/Treponema_Discriminatory_Sites__MinION/nextflow_pipeline_example_run_20240510/MAGUS_context_treemer0.4.multilocus.concat.aln"
+  cat("\nContextual fasta sequences:",AmpliSeq_contextual.fasta.file,"\n")
+  
+  # Read in contextual sequence data
+  ContextualSeqs <- reactive({
+    (read.dna(AmpliSeq_contextual.fasta.file, 'fasta'))
+  })
+  
+  
+  # read in contextual data
+  ContextualisedTree <- reactive({
+    req(input$selected_files)
+    req(ContextualSeqs())
+    
+    # Read in concatenated SNPs (in fasta format)
+    # Specify path for data
+    multi_locus.filepath <- file.path(parseDirPath(c(home = "~"), input$directory), "curated_consensus/") 
+    multi_locus.files <- paste0(multi_locus.filepath, input$selected_files, "_multi_locus.fasta", sep="")
+    
+    cat("\nChecking multi-locus directory\n")
+    cat("\nMulti-locus file path:", multi_locus.filepath, "\n")
+    cat("Multi-locus file list:", multi_locus.files, "\n")
+    
+    # read fasta files into a list
+    multi_locus.sequences <- lapply(multi_locus.files, read.dna, format = "fasta")
+    # convert into an alignment
+    multi_locus.sequences_alignment <- do.call("rbind", multi_locus.sequences)
+    # Update fasta headers
+    AmpliSeq.full.multi_locus.fasta <- updateLabel(multi_locus.sequences_alignment, labels(multi_locus.sequences_alignment), gsub("\\_multi\\_locus\\ joined.+$","",labels(multi_locus.sequences_alignment)))
+    
+    # Subset tip labels to the selection
+    AmpliSeq.full.multi_locus.selected <- AmpliSeq.full.multi_locus.fasta[labels(AmpliSeq.full.multi_locus.fasta) %in% input$selected_files,]
+    
+    # Combine contextual and current sequence data
+    cat("\nCombining new run seqs with contextual seqs\n")
+    AmpliSeq_contextual_and_selected.dnabin <- rbind(AmpliSeq.full.multi_locus.selected, ContextualSeqs())
+    
+    # Convert to a phyDat object, calculate a distance matrix using phangorn, then infer an NJ tree 
+    AmpliSeq_contextual_and_selected.phydat <- phyDat(AmpliSeq_contextual_and_selected.dnabin, type = "DNA", levels = NULL)
+    
+    # import current and contextual data, then make a NJ tree and infer lineages
+    # Fit data using NJ and return tree
+    cat("\nCalculating Tree for Current+Contextual sequences\n")
+    AmpliSeq_contextual_and_selected_fitNJ <- dist.ml(AmpliSeq_contextual_and_selected.phydat, model="JC69")
+    AmpliSeq_contextual_and_selected.phydat.NJ <- NJ(AmpliSeq_contextual_and_selected_fitNJ)
+    AmpliSeq_contextual_and_selected_tree <- midpoint(AmpliSeq_contextual_and_selected.phydat.NJ)
+    cat("\nOutput contextual tree\n")
+    AmpliSeq_contextual_and_selected_tree
+  })
+  
+  InferredLineages <- reactive({
+    req(input$selected_files)
+    req(ContextualisedTree())
+    cat("\nExtracting metadata from contextual sequence headers\n")
+    
+    # contextual.metadata <- data.frame(sample=labels(ContextualSeqs())) %>%
+    #   mutate(Lineage=gsub("^.+__","",sample)) %>%
+    #   mutate(Country= gsub("^.+__","", gsub("__SS14","",gsub("__Nichols","",sample))))
+    
+    contextual.metadata <- data.frame(sample=ContextualisedTree()$tip.label) %>%
+      filter(grepl('Nichols|SS14', sample)) %>%
+      mutate(Lineage=gsub("^.+__","",sample)) %>%
+      mutate(Country= gsub("^.+__","", gsub("__SS14","",gsub("__Nichols","",sample))))
+    
+    cat("\nShow contextual metadata:\n")
+    print(contextual.metadata)
+    #contextual.metadata
+    
+    # Infer Lineages (Nichols/SS14) for novel samples using MRCA/Descendents phylogenetic method
+    inferred_Nichols.list <- data.frame(sample= ContextualisedTree()$tip.label[phangorn::Descendants(ContextualisedTree(), phangorn::mrca.phylo(ContextualisedTree(), filter(contextual.metadata, Lineage=="Nichols") %>% pull(sample)))[[1]] ],
+                                        Lineage="Nichols")
+    inferred_SS14.list <- data.frame(sample= ContextualisedTree()$tip.label[phangorn::Descendants(ContextualisedTree(), phangorn::mrca.phylo(ContextualisedTree(), filter(contextual.metadata, Lineage=="SS14") %>% pull(sample)))[[1]] ],
+                                     Lineage="SS14")
+    inferred_lineages <- data.frame(rbind(inferred_Nichols.list, inferred_SS14.list))
+    
+    cat("\nInferred Lineages:\n")
+    print(inferred_lineages)
+    
+    inferred_lineages
+  })
+  
+
+  output$p.contextual.tree <- renderPlot({
+    req(input$selected_files)
+    req(ContextualSeqs())
+    req(ContextualisedTree())
+    cat("\nCreating initial contextual tree object\n")
+    # Plot tree
+    p.AmpliSeq_contextual_and_selected_tree <- ggtree(ContextualisedTree(), ladderise='right') +
+      #coord_cartesian(xlim=c(0,max(ggtree(fitGTR.tree)$data$x)+2)) +
+      coord_cartesian(xlim=c(0,max(ggtree(ContextualisedTree(), ladderise='right')$data$x)+0.00030)) +
+      geom_treescale(fontsize=text.size.within)
+    cat("\nAdding coloured tips (inferred from current dataset)\n")
+    p.AmpliSeq_contextual_and_selected_tree <- p.AmpliSeq_contextual_and_selected_tree %<+% data.frame(seq=input$selected_files, study="current") +
+      geom_tiplab(aes(color = factor(study)), size=text.size.within, align = T, offset=0.000015) + 
+      scale_color_manual(breaks=c("current"), values=c("green4"), na.value = "grey5", name="Current\nSequencing\nRun") +
+      new_scale_color()
+    cat("\nNow trying to add inferred Lineage data\n")
+     p.AmpliSeq_contextual_and_selected_tree <- p.AmpliSeq_contextual_and_selected_tree %<+% InferredLineages() +
+       geom_tippoint(aes(color=factor(Lineage)), alpha=0.75, size=4) +
+       scale_color_manual(breaks=c("Nichols","SS14"), values=c("royalblue2", "indianred1"), name="Lineage")
+
+    p.AmpliSeq_contextual_and_selected_tree
+    
+  }, height = 700, width = 550 )
+  
+  
+  output$p.contextual.tree.ui <- renderUI({
+    plotOutput("p.contextual.tree", height = 700)
+  })
+  
+  
+  ResistanceTable <- reactive({
+    req(input$selected_files)
+
+    variants.filepath <- file.path(parseDirPath(c(home = "~"), input$directory), "variants/merged_gvcf/")
+    # Function to get the most recent file with suffix _merged.tsv
+    get_most_recent_file <- function(directory, suffix) {
+      files <- list.files(directory, pattern = paste0(".*", suffix, "$"), full.names = TRUE)
+      if (length(files) == 0) {
+        return(NULL)
+      }
+      files_info <- file.info(files)
+      most_recent_file <- rownames(files_info)[which.max(files_info$mtime)]
+      return(most_recent_file)
+    }
+    latest_variants.file <- get_most_recent_file(variants.filepath, "_merged.tsv")
+    latest_variants <- read.csv(latest_variants.file, sep=" ", col.names = c("Reference","POS","REF.allele", "ALT.alleles","SampleID", "GT", "GT_allele"), header = F)
+    # Filter to only include selected samples 
+    latest_variants.selected <- latest_variants %>% filter(SampleID %in% input$selected_files)
+    
+    # Clean up and summarise
+    latest_variants.selected <- latest_variants.selected %>%
+      filter(POS %in% c(235246)) %>%
+      mutate(ResistanceSite="A2058") %>%
+      select(SampleID, ResistanceSite, GT_allele) %>%
+      mutate(Resistant = ifelse(GT_allele=="G", "Resistant", "Sensitive")) %>%
+      arrange(SampleID) %>%
+      # combine with lineage information inferred earlier
+      left_join(InferredLineages(), by=c("SampleID"="sample"))
+    latest_variants.selected
+    cat("Compile 23S variants into a table")
+    print(latest_variants.selected)
+  })
+  
+  output$p.Lineage.Resistance.bars <- renderPlot({
+    req(input$selected_files)
+    req(ResistanceTable())
+    # Prepare macrolide resistance bar plot
+    p.macrolide.Res.bar <- ResistanceTable() %>%
+      mutate(total.samples=n()) %>%
+      group_by(Resistant) %>%
+      mutate(Res.Count=n(), perc.Resistant=round((Res.Count/total.samples)*100,2)) %>%
+      distinct(Res.Count, perc.Resistant) %>%
+      ggplot(aes(x=Resistant, y=Res.Count, fill=Resistant)) +
+      geom_bar(stat='identity', width=0.6) +
+      theme_minimal() + 
+      x.theme.axis.rotate.angle + theme.text.size + legend.size +
+      geom_text(aes(x=Resistant, y=Res.Count+1, label = paste(perc.Resistant,"%")), size=text.size.within, inherit.aes = F) +
+      scale_fill_manual(values=c("grey5", "grey85"), breaks=c("Resistant","Sensitive")) +
+      labs(y="Sample Count", x="A2058G Macrolide Resistance") + theme(legend.position='none')
+    # Now prepare Lineage summary plot
+    p.Lineage.bar <- ResistanceTable() %>%
+      mutate(total.samples=n()) %>%
+      group_by(Lineage) %>%
+      mutate(Lineage.Count=n(), perc.Lineage=round((Lineage.Count/total.samples)*100,2)) %>%
+      distinct(Lineage.Count, perc.Lineage) %>%
+      ggplot(aes(x=Lineage, y=Lineage.Count, fill=Lineage)) +
+      geom_bar(stat='identity', width=0.6) +
+      #theme_bw() + 
+      theme_minimal() +
+      x.theme.axis.rotate.angle + theme.text.size + legend.size +
+      geom_text(aes(x=Lineage, y=Lineage.Count+1, label = paste(perc.Lineage,"%")), size=text.size.within, inherit.aes = F) +
+      scale_fill_manual(breaks=c("Nichols","SS14"), values=c("royalblue2", "indianred1"), name="Lineage") +
+      labs(y="Sample Count", x="Lineage") + theme(legend.position='none')
+    # Now make combined figure using cowplot
+    plot_grid(p.macrolide.Res.bar, p.Lineage.bar, ncol=2, labels=c("Macrolide Resistance", "Lineage"), label_size = 11, scale=0.95)
+  })
+    
+    
+    
+  
+
+
+  output$t.resistancetable <- renderDataTable({
+    req(input$selected_files)
+    ResistanceTable()
+  })
+  
+  
+  
   
   
 }
