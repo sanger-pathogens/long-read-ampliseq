@@ -48,6 +48,6 @@ process BCFTOOLS_QUERY {
 
     out_tsv = "${workflow.runName}_${date}_merged.tsv"
     """
-    bcftools query -f'[%CHROM %POS %REF %ALT %SAMPLE %GT %TGT\n]' ${merged_vcf} > ${out_tsv}
+    bcftools query -f'[%CHROM\t%POS\t%REF\t%ALT\t%SAMPLE\t%GT\t%TGT\t%GQ\t%DP\t%AD\t%AF\n]' ${merged_vcf} > ${out_tsv}
     """
 }
