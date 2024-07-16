@@ -16,7 +16,8 @@ A Nextflow pipeline for basecalling, read mapping, QC, variant calling and analy
     # Download particular model
     dorado download --model <model>
     ```
-     If a pre-downloaded model path is not provided to the pipeline, the model specified by the `--basecall_model` parameter will be downloaded on the fly.
+    If a pre-downloaded model path is not provided to the pipeline, the model specified by the `--basecall_model` parameter will be downloaded on the fly.
+
 5. Download the appropriate Clair3 model from the [Rerio repo](https://github.com/nanoporetech/rerio?tab=readme-ov-file#clair3-models) (you will need Python3)
     
     First clone the repo:
