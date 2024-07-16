@@ -9,14 +9,14 @@ A Nextflow pipeline for basecalling, read mapping, QC, variant calling and analy
 
 3. Download the appropriate Dorado installer from the [repo](https://github.com/nanoporetech/dorado#installation). The path to the executable will be ```<path to downloaded folder>/bin/dorado```
 
-4. Download the appropriate Dorado model from the [repo](https://github.com/nanoporetech/dorado/#available-basecalling-models)
+4. (Optional) Download the appropriate Dorado model from the [repo](https://github.com/nanoporetech/dorado/#available-basecalling-models)
     ```
     # Download all models
     dorado download --model all
     # Download particular model
     dorado download --model <model>
     ```
-
+     If a pre-downloaded model path is not provided to the pipeline, the model specified by the `--basecall_model` parameter will be downloaded on the fly.
 5. Download the appropriate Clair3 model from the [Rerio repo](https://github.com/nanoporetech/rerio?tab=readme-ov-file#clair3-models) (you will need Python3)
     
     First clone the repo:
@@ -48,20 +48,22 @@ nextflow run long-read-ampliseq/main.nf \
 --additional_metadata <CSV mapping sample IDs to barcodes> \
 --dorado_local_path <absolute path to Dorado executable> \
 --clair3_model <path to Clair3 model> \
---basecall_model_path <path to Dorado model> \
--profile laptop
+-profile docker
 ```
 The [examples](examples) folder contains some example files.
 
-The laptop profile enables docker and allows the pipeline to be used offline by providing a local copy of a configuration file that is otherwise downloaded. Before you can run the pipeline offline, you will need to download the required docker images which can be done by running the pipeline to completion while online.
+Instead of `-profile docker`, you can run the pipeline with `-profile laptop`. As well as enabling docker, the laptop profile allows the pipeline to be used offline by providing a local copy of a configuration file that is otherwise downloaded.
 
-The laptop profile also includes defaults for `--basecall_model_path`, `--clair3_model` and `--dorado_local_path`. You can override the default paths with the command line parameters or by supplying an additional config file in which these parameters are set, using the `-c my_custom.config` nextflow option.
+Should you need to run the pipeline offline, it is best to make use of pre-populated dependency caches. These can be created with any of the supported profiles (e.g. `-profile docker`) by running the pipeline once to completion. You will also need to provide a `--basecall_model_path` (see step 4 [above](https://gitlab.internal.sanger.ac.uk/sanger-pathogens/pipelines/long-read-ampliseq/-/edit/main/README.md#installation))- the laptop profile includes a default local path for this, as well as `--clair3_model` and `--dorado_local_path`.
+
+You can override the default paths using the command line parameters directly when invoking nextflow or by supplying an additional config file in which these parameters are set, using the `-c my_custom.config` nextflow option.
 
 ### Other parameters:
 
 #### Basecalling
 - --basecall = "true"
-- --basecall_model = "dna_r10.4.1_e8.2_400bps_hac@v4.3.0" (for downloading the model on the fly, redundant with --basecall_model_path)
+- --basecall_model = "dna_r10.4.1_e8.2_400bps_hac@v4.3.0"
+- --basecall_model_path = ""
 - --trim_adapters = "all"
 - --barcode_kit_name = ["SQK-NBD114-24"] (currently this can only be edited via the config file)
 - --read_format = "fastq"
@@ -106,7 +108,7 @@ module load nextflow ISG/singularity
 
 Follow steps 5 and 6 [above](https://gitlab.internal.sanger.ac.uk/sanger-pathogens/pipelines/long-read-ampliseq/-/edit/main/README.md#installation) to download a Clair3 model and clone the repo.
 
-Usage is slightly different (you use the standard profile and don't need `--dorado_local_path` or `--basecall_model_path`):
+Usage is slightly different (you use the standard profile and don't need `--dorado_local_path`):
 ```bash
 nextflow run long-read-ampliseq/main.nf \
 --raw_read_dir <directory containing FAST5/POD5 files> \
