@@ -4,7 +4,7 @@ process MODEL_DOWNLOAD {
     label 'time_30m'
 
     if (params.dorado_local_path == "") {
-        container 'quay.io/sangerpathogens/cuda_dorado:0.5.1'
+        container 'quay.io/sangerpathogens/cuda_dorado:0.7.1'
     }
     
     input:
@@ -28,7 +28,7 @@ process BASECALL {
     label 'gpu'
 
     if (params.dorado_local_path == "") {
-        container 'quay.io/sangerpathogens/cuda_dorado:0.5.1'
+        container 'quay.io/sangerpathogens/cuda_dorado:0.7.1'
     }
     
     input:
@@ -54,7 +54,7 @@ process DEMUX {
     tag "${barcode_kit_name}"
 
     if (params.dorado_local_path == "") {
-        container 'quay.io/sangerpathogens/cuda_dorado:0.5.1'
+        container 'quay.io/sangerpathogens/cuda_dorado:0.7.1'
     }
     
     input:
@@ -79,7 +79,7 @@ process DORADO_SUMMARY {
     publishDir path: "${params.outdir}/sequencing_summary/", mode: 'copy', overwrite: true, pattern: "summary.tsv"
 
     if (params.dorado_local_path == "") {
-        container 'quay.io/sangerpathogens/cuda_dorado:0.5.1'
+        container 'quay.io/sangerpathogens/cuda_dorado:0.7.1'
     }
     
     input:
@@ -101,7 +101,7 @@ process UNASSIGNED_SUMMARY {
     label 'time_1'
 
     if (params.dorado_local_path == "") {
-        container 'quay.io/sangerpathogens/cuda_dorado:0.5.1'
+        container 'quay.io/sangerpathogens/cuda_dorado:0.7.1'
     }
     
     input:
