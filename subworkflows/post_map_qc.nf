@@ -66,7 +66,7 @@ workflow POST_FILTER_QC {
     )
 
     ON_AND_OFF_TARGET_STATS.out
-        .collectFile(name: "${params.outdir}/qc/post_filter_qc/on_and_off_target_stats.csv", keepHeader: true, skip: 1) { it[1] }
+        .collectFile(storeDir: "${params.outdir}/qc/post_filter_qc", name: "on_and_off_target_stats.csv", keepHeader: true, skip: 1) { it[1] }
 
     emit:
     ch_samtools_stats
