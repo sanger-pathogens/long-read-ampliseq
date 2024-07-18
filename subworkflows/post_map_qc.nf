@@ -67,11 +67,9 @@ workflow POST_FILTER_QC {
 
     ON_AND_OFF_TARGET_STATS.out
         .collectFile(name: "${params.outdir}/qc/post_filter_qc/on_and_off_target_stats.csv", keepHeader: true, skip: 1) { it[1] }
-        .set { ch_on_and_off_target_stats }
 
     emit:
     ch_samtools_stats
-    ch_on_and_off_target_stats
 }
 
 workflow COVERAGE_QC {
