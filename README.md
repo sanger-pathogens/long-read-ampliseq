@@ -2,6 +2,10 @@
 
 A Nextflow pipeline for basecalling, read mapping, QC, variant calling and analysis of nanopore multiplex amplicon data.
 
+![flowchart](images/ampliseq_pipeline.jpg)
+
+For tool versions please see the processes within the 'modules' directory.
+
 ## Installation
 1. [Install Nextflow](https://www.nextflow.io/docs/latest/install.html)
 
@@ -55,9 +59,9 @@ The [examples](examples) folder contains some example files.
 
 Instead of `-profile docker`, you can run the pipeline with `-profile laptop`. As well as enabling docker, the laptop profile allows the pipeline to be used offline by providing a local copy of a configuration file that is otherwise downloaded.
 
-Should you need to run the pipeline offline, it is best to make use of pre-populated dependency caches. These can be created with any of the supported profiles (e.g. `-profile docker`) and involves running the pipeline once to completion. You will also need to provide a `--basecall_model_path` (see installation step 4)- the laptop profile includes a default local path for this, as well as `--clair3_model` and `--dorado_local_path`.
+Should you need to run the pipeline offline, it is best to make use of pre-populated dependency caches. These can be created with any of the supported profiles (e.g. `-profile docker`) by running the pipeline once to completion. You will also need to provide a `--basecall_model_path` (see step 4 [above](#installation))- the laptop profile includes a default local path for this, as well as `--clair3_model` and `--dorado_local_path`.
 
-You can override the default paths using the command line parameters directly when invoking nextflow or supplying an additional config file in which these parameters are set, using the `-c my_custom.config` nextflow option.
+You can override the default paths using the command line parameters directly when invoking nextflow or by supplying an additional config file in which these parameters are set, using the `-c my_custom.config` nextflow option.
 
 ### Other parameters:
 
@@ -107,10 +111,7 @@ Load nextflow and singularity modules:
 module load nextflow ISG/singularity
 ```
 
-Clone the repository with required submodules:
-```bash
-git clone --recurse-submodules https://github.com/sanger-pathogens/long-read-ampliseq.git
-```
+Follow steps 5 and 6 [above](#installation) to download a Clair3 model and clone the repo.
 
 Usage is slightly different (you use the standard profile and don't need `--dorado_local_path`):
 ```bash
