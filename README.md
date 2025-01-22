@@ -111,7 +111,7 @@ Load nextflow and singularity modules:
 module load nextflow ISG/singularity
 ```
 
-Follow steps 5 and 6 [above](https://gitlab.internal.sanger.ac.uk/sanger-pathogens/pipelines/long-read-ampliseq/-/edit/main/README.md#installation) to download a Clair3 model and clone the repo.
+Follow steps 5 and 6 [above](#installation) to download a Clair3 model and clone the repo.
 
 Usage is slightly different (you use the standard profile and don't need `--dorado_local_path`):
 ```bash
