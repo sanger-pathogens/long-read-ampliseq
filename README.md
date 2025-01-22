@@ -4,6 +4,8 @@ A Nextflow pipeline for basecalling, read mapping, QC, variant calling and analy
 
 ![flowchart](images/ampliseq_pipeline.jpg)
 
+For tool versions please see the processes within the 'modules' directory.
+
 ## Installation
 1. [Install Nextflow](https://www.nextflow.io/docs/latest/install.html)
 
