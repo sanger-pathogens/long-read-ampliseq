@@ -59,7 +59,7 @@ The [examples](examples) folder contains some example files.
 
 Instead of `-profile docker`, you can run the pipeline with `-profile laptop`. As well as enabling docker, the laptop profile allows the pipeline to be used offline by providing a local copy of a configuration file that is otherwise downloaded.
 
-Should you need to run the pipeline offline, it is best to make use of pre-populated dependency caches. These can be created with any of the supported profiles (e.g. `-profile docker`) by running the pipeline once to completion. You will also need to provide a `--basecall_model_path` (see step 4 [above](https://gitlab.internal.sanger.ac.uk/sanger-pathogens/pipelines/long-read-ampliseq/-/edit/main/README.md#installation))- the laptop profile includes a default local path for this, as well as `--clair3_model` and `--dorado_local_path`.
+Should you need to run the pipeline offline, it is best to make use of pre-populated dependency caches. These can be created with any of the supported profiles (e.g. `-profile docker`) by running the pipeline once to completion. You will also need to provide a `--basecall_model_path` (see step 4 [above](#installation))- the laptop profile includes a default local path for this, as well as `--clair3_model` and `--dorado_local_path`.
 
 You can override the default paths using the command line parameters directly when invoking nextflow or by supplying an additional config file in which these parameters are set, using the `-c my_custom.config` nextflow option.
 
