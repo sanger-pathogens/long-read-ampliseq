@@ -2,7 +2,7 @@
 
 A Nextflow pipeline for basecalling, read mapping, QC, variant calling and analysis of nanopore multiplex amplicon data.
 
-![flowchart](images/ampliseq_pipeline.jpg)
+![flowchart](images/ampliseq_pipeline.svg)
 
 For tool versions please see the processes within the 'modules' directory.
 
