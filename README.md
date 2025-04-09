@@ -169,6 +169,8 @@ In either case a fresh run with no chaching of tools used within the pipeline ad
 
 ## Tool versions/links
 
+| tool            | version | image url                                              |
+| --------------- | ------- | ------------------------------------------------------ |
 | bcftools        | 1.20    | quay.io/biocontainers/bcftools1.20--h8b25389_0         |
 | bedtools        | 2.31.1  | quay.io/biocontainers/bedtools:2.31.1--hf5e1c6e_1      |
 | clair3          | v1.0.9  | hkubal/clair3:v1.0.9                                   |
