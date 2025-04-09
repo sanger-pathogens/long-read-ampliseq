@@ -7,6 +7,9 @@ A Nextflow pipeline for basecalling, read mapping, QC, variant calling and analy
 For tool versions please see the processes within the 'modules' directory.
 
 ## Installation
+
+Follow the steps below to set up your environment for running the pipeline. The entire setup process should take approximately 5–10 minutes. On the first run, the pipeline will also pull and store Docker images, adding an additional ~10 minutes. Subsequent runs will use cached images and will be faster.
+
 1. [Install Nextflow](https://www.nextflow.io/docs/latest/install.html)
 
 2. [Install Docker](https://docs.docker.com/engine/install/)
@@ -136,6 +139,52 @@ Once your job has finished and you're happy with the output, clean up any interm
 ```bash
 rm -rf work .nextflow*
 ```
+
+## OS requirements
+The pipeline has been tested on multiple operating systems
+
+Linux: Ubuntu 18.04 + 22.04 (Singularity and Docker profiles)
+Mac OSX (Laptop profile)
+
+## Hardware requirements
+
+This pipeline requires only a standard modern computer with enough RAM/CPU power to support running the standard tools. There are checks within the pipeline to determine max resources avaliable to ensure sensible resource requests.
+
+The most taxing sections of the pipeline are
+
+- FastQC
+- Minimap2
+- RAXML-NG
+- Clair3
+
+The pipeline will run without GPU support however in order to get the most out of the tools within access to a GPU supported by Dorado will result in a much faster runtime.
+
+## Approximate runtime
+
+When run in laptop mode a standard run including basecalling is expected to take around 10-12 hours. However this is very dependant on your sequencing depth as with large input basecalling can take much longer. We reccomend tuning your dorado basecalling accuracy to match your time requirements.
+
+On a HPC environment running in singularity mode we have seen with GPU utalisation runs take from as short as 30 minuites to around 1.5 hours.
+
+In either case a fresh run with no chaching of tools used within the pipeline add around 10 minuite to the runtime.
+
+## Tool versions/links
+
+bcftools, 1.20, quay.io/biocontainers/bcftools1.20--h8b25389_0 
+bedtools, 2.31.1, quay.io/biocontainers/bedtools:2.31.1--hf5e1c6e_1  
+clair3, v1.0.9, hkubal/clair3:v1.0.9
+pysam, 0.0.2, quay.io/sangerpathogens/pysam:0.0.2  
+pandas, 2.2.1, quay.io/sangerpathogens/pandas:2.2.1
+python_graphics, 1.0.0, quay.io/sangerpathogens/python_graphics:1.0.0
+cutadapt, 4.7, quay.io/biocontainers/cutadapt:4.7--py310h4b81fae_1 
+cuda_dorado, 0.7.1, quay.io/sangerpathogens/cuda_dorado:0.7.1 (however we suggest you install your own version of dorado to match your OS)
+fastqc, 0.12.1, quay.io/biocontainers/fastqc:0.12.1--hdfd78af_0 
+ubuntu, 20.04, ubuntu:20.04
+minimap2, 2.26, quay.io/biocontainers/minimap2:2.26--he4a0461_2
+multiqc, 1.22.2, quay.io/biocontainers/multiqc:1.22.2--pyhdfd78af_0
+pod5, 0.3.6, quay.io/sangerpathogens/pod5:0.3.6
+pycoqc, 2.5.2, quay.io/biocontainers/pycoqc:2.5.2--py_0  
+samtools, 1.19.2, quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1 
+seqtk, 1.4, quay.io/biocontainers/seqtk:1.4--he4a0461_2
 
 ## Support
 Please contact PaM Informatics for support through our [helpdesk portal](https://jira.sanger.ac.uk/servicedesk/customer/portal/16) or for external users please reach out by email: pam-informatics@sanger.ac.uk
