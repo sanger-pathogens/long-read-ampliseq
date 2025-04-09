@@ -150,26 +150,26 @@ Mac OSX (Laptop profile)
 
 This pipeline requires only a standard modern computer with enough RAM/CPU power to support running the standard tools. There are checks within the pipeline to determine max resources avaliable to ensure sensible resource requests.
 
-The most taxing sections of the pipeline are
+The most taxing sections of the pipeline are:
 
 - FastQC
 - Minimap2
 - RAXML-NG
 - Clair3
 
-The pipeline will run without GPU support however in order to get the most out of the tools within access to a GPU supported by Dorado will result in a much faster runtime.
+The pipeline will run without GPU support; however, access to GPU hardware (one that is supported by Dorado; see [here}(https://github.com/nanoporetech/dorado?tab=readme-ov-file#platforms)) will result in a much faster runtime.
 
 ## Approximate runtime
 
-When executed in **laptop mode**, a full analysis run—including basecalling is typically expected to complete in approximately 10–12 hours. However, this estimate is highly sensitive to sequencing depth; larger input datasets can significantly extend basecalling time. To optimize runtime, we recommend adjusting Dorado basecalling accuracy parameters in accordance with your performance requirements (fast, hac, sup).
+When executed in **laptop mode**, a full analysis run including basecalling is typically expected to complete in approximately 10–12 hours. However, this estimate is highly sensitive to sequencing depth; larger input datasets can significantly extend basecalling time. To optimize runtime, we recommend adjusting Dorado basecalling accuracy parameters in accordance with your performance requirements (fast, hac, sup).
 
-In **HPC** environments utilizing Singularity containers with GPU acceleration, runtimes are substantially reduced. Under optimal conditions, end-to-end processing has been observed to complete in as little as 30 minutes, with typical runs ranging up to 1.5 hours depending on input size and GPU availability.
+In **HPC** environments utilizing Singularity containers with GPU acceleration, runtimes are substantially reduced. Under optimal conditions, end-to-end processing has been observed to complete in as little as 30 minutes, and up to 1.5 hours for typical runs. This is however depending on input size and GPU availability.
 
-> **_NOTE_** First-time runs, where none of the required tools are cached, the initial setup introduces an additional overhead of approximately 10 minutes.
+> **_NOTE_** On first-time runs, where none of the required tools are cached, the initial setup (including downloading dpendency software and models) introduces an additional overhead of approximately 10 minutes.
 
 ## Tool versions/links
 
-| tool            | version | image url                                              |
+| tool            | version | supporting Docker image url                            |
 | --------------- | ------- | ------------------------------------------------------ |
 | bcftools        | 1.20    | quay.io/biocontainers/bcftools1.20--h8b25389_0         |
 | bedtools        | 2.31.1  | quay.io/biocontainers/bedtools:2.31.1--hf5e1c6e_1      |
@@ -188,7 +188,7 @@ In **HPC** environments utilizing Singularity containers with GPU acceleration, 
 | samtools        | 1.19.2  | quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1      |
 | seqtk           | 1.4     | quay.io/biocontainers/seqtk:1.4--he4a0461_2            |
 
-> **_NOTE_** however we suggest you install your own version of dorado to match your OS
+> **_NOTE_** While we provide a default verison of Dorado, we strongly suggest you install your own version of Dorado to match your OS
 
 ## Support
 Please contact PaM Informatics for support through our [helpdesk portal](https://jira.sanger.ac.uk/servicedesk/customer/portal/16) or for external users please reach out by email: pam-informatics@sanger.ac.uk
