@@ -161,11 +161,11 @@ The pipeline will run without GPU support however in order to get the most out o
 
 ## Approximate runtime
 
-When run in laptop mode a standard run including basecalling is expected to take around 10-12 hours. However this is very dependant on your sequencing depth as with large input basecalling can take much longer. We reccomend tuning your dorado basecalling accuracy to match your time requirements.
+When executed in **laptop mode**, a full analysis run—including basecalling is typically expected to complete in approximately 10–12 hours. However, this estimate is highly sensitive to sequencing depth; larger input datasets can significantly extend basecalling time. To optimize runtime, we recommend adjusting Dorado basecalling accuracy parameters in accordance with your performance requirements (fast, hac, sup).
 
-On a HPC environment running in singularity mode we have seen with GPU utalisation runs take from as short as 30 minuites to around 1.5 hours.
+In **HPC** environments utilizing Singularity containers with GPU acceleration, runtimes are substantially reduced. Under optimal conditions, end-to-end processing has been observed to complete in as little as 30 minutes, with typical runs ranging up to 1.5 hours depending on input size and GPU availability.
 
-In either case a fresh run with no chaching of tools used within the pipeline add around 10 minuite to the runtime.
+> **_NOTE_** First-time runs, where none of the required tools are cached, the initial setup introduces an additional overhead of approximately 10 minutes.
 
 ## Tool versions/links
 
