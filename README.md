@@ -68,6 +68,10 @@ Should you need to run the pipeline offline, it is best to make use of pre-popul
 
 You can override the default paths using the command line parameters directly when invoking nextflow or by supplying an additional config file in which these parameters are set, using the `-c my_custom.config` nextflow option.
 
+#### Demo
+
+A short demo featuring a example dataset from Zenodo can be found here: [View the demo](demo/Demo.md)
+
 ### Other parameters:
 
 #### Basecalling
