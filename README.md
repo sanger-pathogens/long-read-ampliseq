@@ -1,5 +1,10 @@
 # Long-read Ampliseq
 
+[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.04.2-23aa62.svg)](https://www.nextflow.io/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15181157.svg)](https://doi.org/10.5281/zenodo.15181157)
+[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
+[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
+
 A Nextflow pipeline for basecalling, read mapping, QC, variant calling and analysis of nanopore multiplex amplicon data.
 
 ![flowchart](images/ampliseq_pipeline.jpg)
@@ -62,6 +67,10 @@ Instead of `-profile docker`, you can run the pipeline with `-profile laptop`. A
 Should you need to run the pipeline offline, it is best to make use of pre-populated dependency caches. These can be created with any of the supported profiles (e.g. `-profile docker`) by running the pipeline once to completion. You will also need to provide a `--basecall_model_path` (see step 4 [above](#installation))- the laptop profile includes a default local path for this, as well as `--clair3_model` and `--dorado_local_path`.
 
 You can override the default paths using the command line parameters directly when invoking nextflow or by supplying an additional config file in which these parameters are set, using the `-c my_custom.config` nextflow option.
+
+#### Demo
+
+To run a short demo please follow the instructions found in the demo document: [Here](demo/Demo.md)
 
 ### Other parameters:
 
@@ -136,6 +145,55 @@ Once your job has finished and you're happy with the output, clean up any interm
 ```bash
 rm -rf work .nextflow*
 ```
+## OS requirements
+
+The pipeline has been tested on multiple operating systems
+
+Linux: Ubuntu 18.04 + 22.04 (Singularity and Docker profiles) Mac OSX (Laptop profile)
+
+## Hardware requirements
+
+This pipeline requires only a standard modern computer with enough RAM/CPU power to support running the standard tools. There are checks within the pipeline to determine max resources avaliable to ensure sensible resource requests.
+
+The most taxing sections of the pipeline are:
+
+- FastQC
+- Minimap2
+- RAXML-NG
+- Clair3
+
+The pipeline will run without GPU support; however, access to GPU hardware (one that is supported by Dorado; see [here](https://github.com/nanoporetech/dorado?tab=readme-ov-file#platforms)) will result in a much faster runtime.
+
+## Approximate runtime
+
+When executed in **laptop mode**, a full analysis run including basecalling is typically expected to complete in approximately 10–12 hours. However, this estimate is highly sensitive to sequencing depth; larger input datasets can significantly extend basecalling time. To optimize runtime, we recommend adjusting Dorado basecalling accuracy parameters in accordance with your performance requirements (fast, hac, sup)
+
+In **HPC** environments utilizing Singularity containers with GPU acceleration, runtimes are substantially reduced. Under optimal conditions, end-to-end processing has been observed to complete in as little as 40 minutes, and up to 1.5 hours for typical runs. This is however depending on input size and GPU availability.
+
+> **_Note_** On first-time runs, where none of the required tools are cached, the initial setup (including downloading dpendency software and models) introduces an additional overhead of approximately 10 minutes.
+
+## Dependancies
+
+| Tool            | Version | Container                                            |
+| --------------- | ------- | ---------------------------------------------------- |
+| bcftools        | 1.20    | quay.io/biocontainers/bcftools1.20--h8b25389_0       |
+| bedtools        | 2.31.1  | quay.io/biocontainers/bedtools:2.31.1--hf5e1c6e_1    |
+| clair3          | v1.0.9  | hkubal/clair3:v1.0.9                                 |
+| pysam           | 0.0.2   | quay.io/sangerpathogens/pysam:0.0.2                  |
+| pandas          | 2.2.1   | quay.io/sangerpathogens/pandas:2.2.1                 |
+| python_graphics | 1.0.0   | quay.io/sangerpathogens/python_graphics:1.0.0        |
+| cutadapt        | 4.7     | quay.io/biocontainers/cutadapt:4.7--py310h4b81fae_1  |
+| cuda_dorado     | 0.7.1   | quay.io/sangerpathogens/cuda_dorado:0.7.1 (SEE NOTE) |
+| fastqc          | 0.12.1  | quay.io/biocontainers/fastqc:0.12.1--hdfd78af_0      |
+| ubuntu          | 20.04   | ubuntu:20.04                                         |
+| minimap2        | 2.26    | quay.io/biocontainers/minimap2:2.26--he4a0461_2      |
+| multiqc         | 1.22.2  | quay.io/biocontainers/multiqc:1.22.2--pyhdfd78af_0   |
+| pod5            | 0.3.6   | quay.io/sangerpathogens/pod5:0.3.6                   |
+| pycoqc          | 2.5.2   | quay.io/biocontainers/pycoqc:2.5.2--py_0             |
+| samtools        | 1.19.2  | quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1    |
+| seqtk           | 1.4     | quay.io/biocontainers/seqtk:1.4--he4a0461_2          |
+
+> **_NOTE_** however we suggest you install your own version of dorado to match your OS
 
 ## Support
 Please contact PaM Informatics for support through our [helpdesk portal](https://jira.sanger.ac.uk/servicedesk/customer/portal/16) or for external users please reach out by email: pam-informatics@sanger.ac.uk
