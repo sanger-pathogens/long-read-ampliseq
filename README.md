@@ -153,7 +153,7 @@ Note that on first-time runs, where none of the required tools are cached, the i
 ## Dependancies
 
 | Tool            | Version | Container                                            |
-| ----------------| --------| -----------------------------------------------------|
+| --------------- | ------- | ---------------------------------------------------- |
 | bcftools        | 1.20    | quay.io/biocontainers/bcftools1.20--h8b25389_0       |
 | bedtools        | 2.31.1  | quay.io/biocontainers/bedtools:2.31.1--hf5e1c6e_1    |
 | clair3          | v1.0.9  | hkubal/clair3:v1.0.9                                 |
