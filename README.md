@@ -137,5 +137,34 @@ Once your job has finished and you're happy with the output, clean up any interm
 rm -rf work .nextflow*
 ```
 
+## Performance Expectations by profile
+
+When executed in laptop mode, a full analysis run—including basecalling—is typically expected to complete in approximately 10–12 hours. However, this estimate is highly sensitive to sequencing depth; larger input datasets can significantly extend basecalling time. To optimize runtime, we recommend adjusting Dorado basecalling accuracy parameters in accordance with your performance requirements.
+
+In HPC environments utilizing Singularity containers with GPU acceleration, runtimes are substantially reduced. Under optimal conditions, end-to-end processing has been observed to complete in as little as 40 minutes, with typical runs ranging up to 1.5 hours depending on input size and GPU availability.
+
+Note that on first-time runs, where none of the required tools are cached, the initial setup introduces an additional overhead of approximately 10 minutes.
+
+## Dependancies
+
+| bcftools        | 1.20    | quay.io/biocontainers/bcftools1.20--h8b25389_0 
+| bedtools        | 2.31.1  | quay.io/biocontainers/bedtools:2.31.1--hf5e1c6e_1  
+| clair3          | v1.0.9  | hkubal/clair3:v1.0.9
+| pysam           | 0.0.2   | quay.io/sangerpathogens/pysam:0.0.2  
+| pandas          | 2.2.1   | quay.io/sangerpathogens/pandas:2.2.1
+| python_graphics | 1.0.0   | quay.io/sangerpathogens/python_graphics:1.0.0
+| cutadapt        | 4.7     | quay.io/biocontainers/cutadapt:4.7--py310h4b81fae_1 
+| cuda_dorado     | 0.7.1   | quay.io/sangerpathogens/cuda_dorado:0.7.1 (SEE NOTE)
+| fastqc          | 0.12.1  | quay.io/biocontainers/fastqc:0.12.1--hdfd78af_0 
+| ubuntu          | 20.04   | ubuntu:20.04
+| minimap2        | 2.26    | quay.io/biocontainers/minimap2:2.26--he4a0461_2
+| multiqc         | 1.22.2  | quay.io/biocontainers/multiqc:1.22.2--pyhdfd78af_0
+| pod5            | 0.3.6   | quay.io/sangerpathogens/pod5:0.3.6
+| pycoqc          | 2.5.2   | quay.io/biocontainers/pycoqc:2.5.2--py_0  
+| samtools        | 1.19.2  | quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1 
+| seqtk           | 1.4     | quay.io/biocontainers/seqtk:1.4--he4a0461_2
+
+> **_NOTE_** however we suggest you install your own version of dorado to match your OS
+
 ## Support
 Please contact PaM Informatics for support through our [helpdesk portal](https://jira.sanger.ac.uk/servicedesk/customer/portal/16) or for external users please reach out by email: pam-informatics@sanger.ac.uk
