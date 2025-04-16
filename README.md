@@ -1,4 +1,6 @@
-# Long-read Ampliseq
+# ONTAP
+
+**ONT** **A**mplicon sequencing **P**ipeline
 
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.04.2-23aa62.svg)](https://www.nextflow.io/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15181157.svg)](https://doi.org/10.5281/zenodo.15181157)
@@ -172,7 +174,7 @@ In **HPC** environments utilizing Singularity containers with GPU acceleration, 
 
 > **_Note_** On first-time runs, where none of the required tools are cached, the initial setup (including downloading dpendency software and models) introduces an additional overhead of approximately 10 minutes.
 
-## Dependancies
+## Dependencies
 
 | Tool            | Version | Container                                            |
 | --------------- | ------- | ---------------------------------------------------- |
