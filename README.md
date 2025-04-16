@@ -152,24 +152,24 @@ Note that on first-time runs, where none of the required tools are cached, the i
 
 ## Dependancies
 
-| Tool            | Version | Container |
-| ---             | ---     | --- |
-| bcftools        | 1.20    | quay.io/biocontainers/bcftools1.20--h8b25389_0 |
-| bedtools        | 2.31.1  | quay.io/biocontainers/bedtools:2.31.1--hf5e1c6e_1   |
-| clair3          | v1.0.9  | hkubal/clair3:v1.0.9 |
-| pysam           | 0.0.2   | quay.io/sangerpathogens/pysam:0.0.2   |
-| pandas          | 2.2.1   | quay.io/sangerpathogens/pandas:2.2.1 |
-| python_graphics | 1.0.0   | quay.io/sangerpathogens/python_graphics:1.0.0 |
+| Tool            | Version | Container                                            |
+| ----------------| --------| -----------------------------------------------------|
+| bcftools        | 1.20    | quay.io/biocontainers/bcftools1.20--h8b25389_0       |
+| bedtools        | 2.31.1  | quay.io/biocontainers/bedtools:2.31.1--hf5e1c6e_1    |
+| clair3          | v1.0.9  | hkubal/clair3:v1.0.9                                 |
+| pysam           | 0.0.2   | quay.io/sangerpathogens/pysam:0.0.2                  |
+| pandas          | 2.2.1   | quay.io/sangerpathogens/pandas:2.2.1                 |
+| python_graphics | 1.0.0   | quay.io/sangerpathogens/python_graphics:1.0.0        |
 | cutadapt        | 4.7     | quay.io/biocontainers/cutadapt:4.7--py310h4b81fae_1  |
 | cuda_dorado     | 0.7.1   | quay.io/sangerpathogens/cuda_dorado:0.7.1 (SEE NOTE) |
-| fastqc          | 0.12.1  | quay.io/biocontainers/fastqc:0.12.1--hdfd78af_0  |
-| ubuntu          | 20.04   | ubuntu:20.04 |
-| minimap2        | 2.26    | quay.io/biocontainers/minimap2:2.26--he4a0461_2 |
-| multiqc         | 1.22.2  | quay.io/biocontainers/multiqc:1.22.2--pyhdfd78af_0 |
-| pod5            | 0.3.6   | quay.io/sangerpathogens/pod5:0.3.6 |
-| pycoqc          | 2.5.2   | quay.io/biocontainers/pycoqc:2.5.2--py_0   |
-| samtools        | 1.19.2  | quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1  |
-| seqtk           | 1.4     | quay.io/biocontainers/seqtk:1.4--he4a0461_2 |
+| fastqc          | 0.12.1  | quay.io/biocontainers/fastqc:0.12.1--hdfd78af_0      |
+| ubuntu          | 20.04   | ubuntu:20.04                                         |
+| minimap2        | 2.26    | quay.io/biocontainers/minimap2:2.26--he4a0461_2      |
+| multiqc         | 1.22.2  | quay.io/biocontainers/multiqc:1.22.2--pyhdfd78af_0   |
+| pod5            | 0.3.6   | quay.io/sangerpathogens/pod5:0.3.6                   |
+| pycoqc          | 2.5.2   | quay.io/biocontainers/pycoqc:2.5.2--py_0             |
+| samtools        | 1.19.2  | quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1    |
+| seqtk           | 1.4     | quay.io/biocontainers/seqtk:1.4--he4a0461_2          |
 
 > **_NOTE_** however we suggest you install your own version of dorado to match your OS
 
