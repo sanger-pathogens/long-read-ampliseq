@@ -47,12 +47,12 @@ For tool versions please see the processes within the 'modules' directory.
 6. Clone the repository with required submodules
     
     ```
-    git clone --recurse-submodules https://github.com/sanger-pathogens/long-read-ampliseq.git
+    git clone --recurse-submodules https://github.com/sanger-pathogens/ONTAP.git
     ```
 
 ## Usage
 ```
-nextflow run long-read-ampliseq/main.nf \
+nextflow run ONTAP/main.nf \
 --raw_read_dir <directory containing FAST5/POD5 files> \
 --reference <reference fasta> \
 --primers <fasta containing primers> \
@@ -126,7 +126,7 @@ Follow steps 5 and 6 [above](#installation) to download a Clair3 model and clone
 
 Usage is slightly different (you use the standard profile and don't need `--dorado_local_path`):
 ```bash
-nextflow run long-read-ampliseq/main.nf \
+nextflow run ONTAP/main.nf \
 --raw_read_dir <directory containing FAST5/POD5 files> \
 --reference <reference fasta> \
 --primers <fasta containing primers> \

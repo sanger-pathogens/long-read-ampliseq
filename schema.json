@@ -1,5 +1,5 @@
 {
-    "pipeline": "long-read-ampliseq",
+    "pipeline": "ONTAP",
     "params": {
         "Basecalling": {
             "basecall": {
