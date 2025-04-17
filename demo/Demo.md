@@ -5,7 +5,7 @@ To get started, please refer to the Installation Guide provided in the main proj
 ## 1. Verify Nextflow Install
 After completing the installation, verify that Nextflow is working by running the following command:
 ```
-nextflow run sanger-pathogens/long-read-ampliseq --help
+nextflow run sanger-pathogens/ONTAP --help
 ```
 
 This command should display a comprehensive help message detailing all available configuration options.
@@ -29,7 +29,7 @@ mv *.pod5 pod5
 ## 4. Running the Pipeline
 Replace the placeholder values (<...>) with the appropriate absolute paths for your system, and run the pipeline as follows:
 ```
-nextflow run sanger-pathogens/long-read-ampliseq \
+nextflow run sanger-pathogens/ONTAP \
     --raw_read_dir phylo-plex-data/pod5 \
     --reference NC_021508.1.mask-Ribosomal-Operon2.fasta \
     --primers TP-Discriminatory-primers.20230208_23S-v1.fas \
