@@ -513,7 +513,7 @@ server <- function(input, output, session) {
   ## Now add contextual data
   
   # Specify contextual data
-  AmpliSeq_contextual.fasta.file <- "/Users/mb29/Treponema/Treponema_Discriminatory_Sites__MinION/nextflow_pipeline_example_run_20240510/MAGUS_context_treemer0.4.multilocus.concat.aln"
+  AmpliSeq_contextual.fasta.file <- "MAGUS_context_treemer0.4.multilocus.concat.aln"
   cat("\nContextual fasta sequences:",AmpliSeq_contextual.fasta.file,"\n")
   
   # Read in contextual sequence data
