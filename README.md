@@ -1,6 +1,6 @@
 # ONTAP
 
-**ONT** **A**mplicon sequencing **P**ipeline
+**ONT** **A**mplicon sequencing **P**hylotyper
 
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.04.2-23aa62.svg)](https://www.nextflow.io/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15181157.svg)](https://doi.org/10.5281/zenodo.15181157)
